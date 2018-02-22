@@ -1,13 +1,28 @@
 package custody
 
 import (
+	"crypto/ecdsa"
+	"database/sql"
+	"fmt"
+	"github.com/gtank/cryptopasta"
+	"github.com/xo/xoutil"
 	"github.gatech.edu/NIJ-Grant/custody/models"
 	"time"
-	"github.com/xo/xoutil"
-	"crypto/ecdsa"
-	"github.com/gtank/cryptopasta"
-	"database/sql"
+	"log"
 )
+
+type CustodyError struct {
+	Operation  string
+	ID         *models.Identity
+	Message    []byte
+	Signature  []byte
+	publickey  *ecdsa.PublicKey
+	privatekey *ecdsa.PrivateKey
+}
+
+func (e CustodyError) Error() string {
+	return fmt.Sprintf("CryptoError: op:%s, id:%v", e.Operation, e.ID)
+}
 
 type DB struct {
 	models.XODB
@@ -70,22 +85,34 @@ func XONow() xoutil.SqTime {
 	return xoutil.SqTime{Time: time.Now()}
 }
 
-func (db *DB) NewUser(name string, publickey []byte) (models.Identity, error){
-	t:=XONow()
-	ident := models.Identity{Name:name, PublicKey:publickey, CreatedAt: t}
+func (db *DB) NewUser(name string, publickey []byte) (models.Identity, error) {
+	t := XONow()
+	ident := models.Identity{Name: name, PublicKey: publickey, CreatedAt: t}
 	if err := ident.Insert(db); err != nil {
 		return ident, err
 	}
 	return ident, nil
 }
 
-
-func (db *DB) Operate(identity models.Identity, message string) (models.Ledger, error) {
-	ledg := models.Ledger{Identity: identity.ID, Message:message}
-	if err := ledg.Insert(db); err != nil {
-		return ledg, err
+func (db *DB) Operate(identity *models.Identity, message string, hash []byte) (ledg models.Ledger, err error) {
+	var key *ecdsa.PublicKey
+	var valid bool
+	key, err = identity.Public()
+	if err != nil {
+		return
 	}
-	return ledg, nil
+	data := []byte(message)
+	log.Printf("data  read from stdin: %v", data)
+	valid = cryptopasta.Verify([]byte(message), hash, key)
+	if !valid {
+		err = CustodyError{Operation:"InvalidSignature", ID:identity, Message:[]byte(message), Signature:hash}
+		return
+	}
+	ledg = models.Ledger{Identity: identity.ID, Message: message}
+	if err = ledg.Insert(db); err != nil {
+		return
+	}
+	return
 }
 
 func (db *DB) Validate(identity models.Identity, data []byte, hash []byte) (bool, error) {

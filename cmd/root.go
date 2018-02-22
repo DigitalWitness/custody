@@ -27,10 +27,12 @@ import (
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.gatech.edu/NIJ-Grant/custody/lib"
 )
 
 var cfgFile, dsn string
-
+var db *custody.DB
+var myid int
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
 	Use:   "custody",

@@ -36,6 +36,20 @@ func LoadPublicKey(dir string) (key *ecdsa.PublicKey, err error) {
 	return
 }
 
+//LoadPrivateKey: parse the public key from the base directory at dir,
+//returns an error if we fail to read the x509 formatted file, or
+//fail to parse the cert itself.
+func LoadPrivateKey(dir string) (key *ecdsa.PrivateKey, err error) {
+	path := dir
+	pubpath := filepath.Join(path, "id_ecdsa")
+	keybytes, err := ioutil.ReadFile(pubpath)
+	if err != nil {
+		return
+	}
+	key, err = x509.ParseECPrivateKey(keybytes)
+	return
+}
+
 //StoreKeys: write the public and private key-pair in x509 format to a directory.
 //for example StoreKeys(key, "/home/user/.custodyctl/id_ecdsa") will store
 //the keys as "/home/user/.custodyctl/id_ecdsa" and "/home/user/.custodyctl/id_ecdsa.pub"
@@ -64,7 +78,7 @@ func StoreKeys(key *ecdsa.PrivateKey, path string) (err error) {
 		return
 	}
 	pubpath := filepath.Join(path, "id_ecdsa.pub")
-	fp, err = os.OpenFile(privpath, os.O_CREATE | os.O_RDWR, 0644)
+	fp, err = os.OpenFile(pubpath, os.O_CREATE | os.O_RDWR, 0644)
 	defer fp.Close()
 	if err != nil {
 		return
