@@ -23,66 +23,44 @@ package cmd
 import (
 	"fmt"
 
-	"crypto/ecdsa"
-	"crypto/x509"
-	"github.com/gtank/cryptopasta"
 	"github.com/spf13/cobra"
-	"github.gatech.edu/NIJ-Grant/custody/client"
+	//"github.gatech.edu/NIJ-Grant/custody/client"
+	"github.gatech.edu/NIJ-Grant/custody/crypto"
 	"github.gatech.edu/NIJ-Grant/custody/lib"
 	"github.gatech.edu/NIJ-Grant/custody/models"
-	"log"
 )
 
-//Fatal: if err != nil, log.Fatal with a message.
-func Fatal(err error, fmtstring string) {
-	if err != nil {
-		log.Fatalf(fmtstring, err)
-	}
-}
-
-//SubmitUser: user the API connection to create a user based on the username and the public key.
-//TODO: this currently connects to the DB directly, it should use an API layer.
-func SubmitIdentity(user string, key *ecdsa.PublicKey) (i models.Identity, err error) {
-	keybytes, err := x509.MarshalPKIXPublicKey(key)
-	if err != nil {
-		return
-	}
-	i, err = db.NewUser(user, keybytes)
-	return
-}
-
-// createCmd represents the create command
-var createCmd = &cobra.Command{
-	Use:   "create",
-	Short: "Create a new user for the custody system",
-	Long:  `Enrolls a new user in the system by generating their x509 cert.`,
+// listCmd represents the list command
+var listCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List the ledger entries associated with a user or file.",
+	Long: `custody list is a command to list the ledger entries associate with a username or media element.
+	Currently only users are supported.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("list called")
 		var err error
-		db, err = custody.Dial(dsn)
-		Fatal(err, "could not connect to API: %s")
-		log.Printf("Database DSN=%s, DB=%+v", dsn, db)
-		fmt.Println("create called")
 
-		log.Printf("user: %s", username)
-		key, err := cryptopasta.NewSigningKey()
-		Fatal(err, "could not generate key: %s")
-		err = client.StoreKeys(key, "")
-		Fatal(err, "could not store keys: %s")
-		SubmitIdentity(username, &key.PublicKey)
+		db, err = custody.Dial(dsn)
+		Fatal(err, "Failed to dial database")
+		ls, err := models.LedgersByName(db, username)
+		Fatal(err, "Failed to find ledger items %s")
+		for _, l := range ls {
+			fmt.Printf("ID:%d, CreatedAt:%s, Hash:%s, Message:%s\n",
+				l.ID, l.CreatedAt, crypto.EncodeBinary(l.Hash), l.Message)
+		}
 	},
 }
 
 func init() {
-	RootCmd.AddCommand(createCmd)
+	RootCmd.AddCommand(listCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// createCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// listCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// createCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
+	// listCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

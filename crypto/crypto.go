@@ -3,11 +3,12 @@ package crypto
 import (
 	"crypto/ecdsa"
 	"crypto/x509"
+	"encoding/base64"
 	"fmt"
 )
 
 //ParseECDSAPUblicKey calls x509.ParsePKIXPublicKey and ensures that the result is an ecdsa.PublicKey.
-func ParseECDSAPublicKey (data []byte) (*ecdsa.PublicKey, error){
+func ParseECDSAPublicKey(data []byte) (*ecdsa.PublicKey, error) {
 	pubbox, err := x509.ParsePKIXPublicKey(data)
 	if err != nil {
 		return nil, err
@@ -19,4 +20,10 @@ func ParseECDSAPublicKey (data []byte) (*ecdsa.PublicKey, error){
 		return pub, nil
 
 	}
+}
+
+//EncodeBinary: base64 a buffer of bytes into a string.
+//useful for printing out hashes and public keys.
+func EncodeBinary(b []byte) string {
+	return base64.StdEncoding.EncodeToString(b)
 }

@@ -1,14 +1,14 @@
 package client
 
 import (
-	"github.com/mitchellh/go-homedir"
-	"path/filepath"
 	"crypto/ecdsa"
-	"os"
 	"crypto/x509"
-	"io/ioutil"
+	"github.com/mitchellh/go-homedir"
 	"github.gatech.edu/NIJ-Grant/custody/crypto"
+	"io/ioutil"
 	"log"
+	"os"
+	"path/filepath"
 )
 
 //KeyDir: finds the path to the directoy containing the keys relative to fpath
@@ -66,7 +66,7 @@ func StoreKeys(key *ecdsa.PrivateKey, path string) (err error) {
 	log.Printf("writing keys to directory %s", path)
 
 	privpath := filepath.Join(path, "id_ecdsa")
-	fp, err := os.OpenFile(privpath, os.O_CREATE | os.O_RDWR, 0600)
+	fp, err := os.OpenFile(privpath, os.O_CREATE|os.O_RDWR, 0600)
 	defer fp.Close()
 	if err != nil {
 		return
@@ -78,7 +78,7 @@ func StoreKeys(key *ecdsa.PrivateKey, path string) (err error) {
 		return
 	}
 	pubpath := filepath.Join(path, "id_ecdsa.pub")
-	fp, err = os.OpenFile(pubpath, os.O_CREATE | os.O_RDWR, 0644)
+	fp, err = os.OpenFile(pubpath, os.O_CREATE|os.O_RDWR, 0644)
 	defer fp.Close()
 	if err != nil {
 		return
@@ -92,4 +92,3 @@ func StoreKeys(key *ecdsa.PrivateKey, path string) (err error) {
 	return
 
 }
-

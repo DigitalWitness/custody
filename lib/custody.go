@@ -104,10 +104,10 @@ func (db *DB) Operate(identity *models.Identity, message string, hash []byte) (l
 	//log.Printf("data  read from stdin: %v", data)
 	valid = cryptopasta.Verify(data, hash, key)
 	if !valid {
-		err = CustodyError{Operation:"InvalidSignature", ID:identity, Message:data, Signature:hash}
+		err = CustodyError{Operation: "InvalidSignature", ID: identity, Message: data, Signature: hash}
 		return
 	}
-	ledg = models.Ledger{Identity: identity.ID, Message: message}
+	ledg = models.Ledger{Identity: identity.ID, CreatedAt: XONow(), Message: message, Hash: hash}
 	if err = ledg.Insert(db); err != nil {
 		return
 	}

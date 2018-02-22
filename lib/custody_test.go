@@ -3,17 +3,16 @@ package custody
 import (
 	"testing"
 
-	"github.gatech.edu/NIJ-Grant/custody/models"
-	"database/sql"
-	_ "github.com/mattn/go-sqlite3"
-	"github.com/gtank/cryptopasta"
+	"bytes"
 	"crypto/ecdsa"
 	"crypto/x509"
-	"bytes"
+	"database/sql"
+	"github.com/gtank/cryptopasta"
+	_ "github.com/mattn/go-sqlite3"
 	"github.gatech.edu/NIJ-Grant/custody/crypto"
+	"github.gatech.edu/NIJ-Grant/custody/models"
 	"log"
 )
-
 
 func FailTest(t *testing.T, err error, fmtstring string) {
 	if err != nil {
@@ -21,7 +20,7 @@ func FailTest(t *testing.T, err error, fmtstring string) {
 	}
 }
 
-func CheckCount(t *testing.T, db models.XODB, query string, expected int)  {
+func CheckCount(t *testing.T, db models.XODB, query string, expected int) {
 	var cnt int
 	res, err := db.Query(query)
 	if err != nil {
@@ -45,7 +44,6 @@ func setupdb(t *testing.T, path string) *DB {
 	return cdb
 }
 
-
 func TestDB_NewUser(t *testing.T) {
 
 	cdb := setupdb(t, "./testing.sqlite")
@@ -61,7 +59,7 @@ func TestDB_NewUser(t *testing.T) {
 		want    models.Identity
 		wantErr bool
 	}{
-		{"evan", cdb, args{"evan", pub},models.Identity{ID:1, Name:"evan", CreatedAt:XONow(),PublicKey:pub}, false},
+		{"evan", cdb, args{"evan", pub}, models.Identity{ID: 1, Name: "evan", CreatedAt: XONow(), PublicKey: pub}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -80,7 +78,7 @@ func TestDB_NewUser(t *testing.T) {
 			}
 		})
 	}
-	CheckCount(t, cdb, "select count(*) from identities",1)
+	CheckCount(t, cdb, "select count(*) from identities", 1)
 	CheckCount(t, cdb, "select count(*) from ledger", 1)
 }
 
@@ -174,7 +172,7 @@ func TestValidate(t *testing.T) {
 	var pub *ecdsa.PublicKey
 	cdb := setupdb(t, "testing.sqlite")
 
-	req := Request{Command:"create"}
+	req := Request{Command: "create"}
 	ident, err = models.IdentityByID(cdb, 1)
 	if err != nil {
 		t.Fatalf("Could not find identity: %v", err)
@@ -214,7 +212,6 @@ func TestValidate(t *testing.T) {
 	}
 }
 
-
 //Can we get the identity entries associated with a username?
 func TestIndexes(t *testing.T) {
 	cdb := setupdb(t, "testing.sqlite")
@@ -226,11 +223,12 @@ func TestIndexes(t *testing.T) {
 }
 
 //Can we get the ledger entries associated with an identity?
-func TestLedgerIndexes(t *testing.T){
+func TestLedgerIndexes(t *testing.T) {
 	cdb := setupdb(t, "testing.sqlite")
 	ids, err := models.IdentitiesByName(cdb, "evan")
 	id := ids[len(ids)-1]
-	ls, err := models.LedgersByIdentity(cdb, id.ID)
+
+	ls, err := models.LedgersByName(cdb, "evan")
 	FailTest(t, err, "failed IdentitiesByName %s")
 	for _, l := range ls {
 		log.Print(*l)

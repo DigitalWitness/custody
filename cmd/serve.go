@@ -23,9 +23,9 @@ package cmd
 import (
 	"fmt"
 
+	"database/sql"
 	"github.com/spf13/cobra"
 	"github.gatech.edu/NIJ-Grant/custody/lib"
-	"database/sql"
 	"log"
 )
 

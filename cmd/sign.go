@@ -25,25 +25,22 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.gatech.edu/NIJ-Grant/custody/client"
 	"github.com/gtank/cryptopasta"
-	"io/ioutil"
-	"os"
-	"log"
+	"github.gatech.edu/NIJ-Grant/custody/client"
 	"github.gatech.edu/NIJ-Grant/custody/lib"
 	"github.gatech.edu/NIJ-Grant/custody/models"
+	"io/ioutil"
+	"log"
+	"os"
 )
 
 // signCmd represents the sign command
 var signCmd = &cobra.Command{
 	Use:   "sign",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "sign creates a ledger entry signed by the current user.",
+	Long: `Signed entries can be used to record operations on files attributed to users.
+You need the private key stored in ~/.custodyctl/id_ecdsa in order to create a valid signature.
+The custody create command is used to generate key pairs and upload the public part to the server.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("sign called")
 		var err error
@@ -60,11 +57,15 @@ to quickly create a Cobra application.`,
 		log.Printf("bytes read from stdin: %d", len(data))
 		log.Printf("string read from stdin: %v", data)
 		hash, err := cryptopasta.Sign(data, key)
-		Fatal(err,"could not hash input: %s")
+		Fatal(err, "could not hash input: %s")
 		//log.Printf("Successful hashing: %s", hash)
 
-		myid = 3
-		i, err := models.IdentityByID(db, myid)
+		ids, err := models.IdentitiesByName(db, username)
+		if err != nil || len(ids) < 1 {
+			Fatal(fmt.Errorf("no identities found with username:%s, err:%s", username, err),
+				"identity lookup failed %s")
+		}
+		i := ids[len(ids)-1]
 		ledg, err := db.Operate(i, string(data), hash)
 		Fatal(err, "could not add message to ledger %s")
 		log.Printf("Ledger Entry: %v", ledg)

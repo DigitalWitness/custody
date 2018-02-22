@@ -20,9 +20,10 @@
 
 package main
 
-import ("github.gatech.edu/NIJ-Grant/custody/cmd"
-		//"github.gatech.edu/NIJ-Grant/custody/lib"
-		)
+import (
+	"github.gatech.edu/NIJ-Grant/custody/cmd"
+	//"github.gatech.edu/NIJ-Grant/custody/lib"
+)
 
 //generate: xo
 func main() {

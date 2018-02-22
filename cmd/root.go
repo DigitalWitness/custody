@@ -33,16 +33,15 @@ import (
 var cfgFile, dsn string
 var db *custody.DB
 var myid int
+var username string
+
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
 	Use:   "custody",
 	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Long: `Custody manager command line application. This application serves both as the client and server.
+You can host a custody server using the serve command which will accept API requests to conduct operations on the database.
+The operations include create, sign, and list which enroll users, sign messages or list application state.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	//	Run: func(cmd *cobra.Command, args []string) { },
@@ -57,7 +56,7 @@ func Execute() {
 	}
 }
 
-func init() { 
+func init() {
 	cobra.OnInitialize(initConfig)
 
 	// Here you will define your flags and configuration settings.
@@ -65,6 +64,7 @@ func init() {
 	// will be global for your application.
 	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.custody.yaml)")
 	RootCmd.PersistentFlags().StringVar(&dsn, "dsn", "", "connection string for example file://custody.sqlite")
+	RootCmd.PersistentFlags().StringVar(&username, "username", "", "the username for your identity")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
