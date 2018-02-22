@@ -12,6 +12,7 @@ type DB struct {
 	models.XODB
 }
 
+//Request: a structure for dispatching the network requests RPC style.
 type Request struct {
 	Command string `json:"command"`
 	models.Identity
@@ -19,6 +20,10 @@ type Request struct {
 	ecdsa.PublicKey `json:"public_key"`
 }
 
+//Init: initialize the database by executing create table statements
+//theses create tables use IF NOT EXISTS so that it will be idempotent
+//if you change the schema, you must update this function and drop all
+//the tables in the database or otherwise migrate the schema
 func (db *DB) Init() error {
 	query := `
 
@@ -45,6 +50,7 @@ create table if not exists ledger (
 	return nil
 }
 
+//XONow: wrap the current time in an xoutil.SqTime so that it can be entered into the DB.
 func XONow() xoutil.SqTime {
 	return xoutil.SqTime{Time: time.Now()}
 }
