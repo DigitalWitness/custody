@@ -6,10 +6,25 @@ import (
 	"github.com/xo/xoutil"
 	"crypto/ecdsa"
 	"github.com/gtank/cryptopasta"
+	"database/sql"
 )
 
 type DB struct {
 	models.XODB
+}
+
+//Dial: connect to the custody server and return a handle to the connection.
+//dsn argument describes the connection parameters
+//TODO: change this to use an API layer.
+func Dial(dsn string) (*DB, error) {
+	db, err := sql.Open("sqlite3", dsn)
+	if err != nil {
+		return nil, err
+	}
+
+	conn := &DB{db}
+	conn.Init()
+	return conn, nil
 }
 
 //Request: a structure for dispatching the network requests RPC style.
@@ -64,6 +79,7 @@ func (db *DB) NewUser(name string, publickey []byte) (models.Identity, error){
 	return ident, nil
 }
 
+
 func (db *DB) Operate(identity models.Identity, message string) (models.Ledger, error) {
 	ledg := models.Ledger{Identity: identity.ID, Message:message}
 	if err := ledg.Insert(db); err != nil {
@@ -81,6 +97,7 @@ func (db *DB) Validate(identity models.Identity, data []byte, hash []byte) (bool
 	return valid, nil
 }
 
+//Sign: use the private key to sign a message and insert it into the db.
 func (db *DB) Sign(data []byte, key *ecdsa.PrivateKey) ([]byte, error) {
 	sig, err := cryptopasta.Sign(data, key)
 	if err != nil {

@@ -26,20 +26,43 @@ import (
 	"github.com/spf13/cobra"
 	"log"
 	"github.com/gtank/cryptopasta"
+	"github.gatech.edu/NIJ-Grant/custody/client"
+	"github.gatech.edu/NIJ-Grant/custody/lib"
+	"crypto/ecdsa"
 	"crypto/x509"
+	"github.gatech.edu/NIJ-Grant/custody/models"
 )
 
+var db *custody.DB
+
+//Fatal: if err != nil, log.Fatal with a message.
 func Fatal(err error, fmtstring string) {
 	if err != nil {
 		log.Fatalf(fmtstring, err)
 	}
 }
+
+//SubmitUser: user the API connection to create a user based on the username and the public key.
+//TODO: this currently connects to the DB directly, it should use an API layer.
+func SubmitIdentity(user string, key *ecdsa.PublicKey) (i models.Identity, err error) {
+	keybytes, err := x509.MarshalPKIXPublicKey(key)
+	if err != nil {
+		return
+	}
+	i, err = db.NewUser(user, keybytes)
+	return
+}
+
 // createCmd represents the create command
 var createCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create a new user for the custody system",
 	Long: `Enrolls a new user in the system by generating their x509 cert.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		var err error
+		db, err = custody.Dial(dsn)
+		Fatal(err, "could not connect to API: %s")
+		log.Printf("Database DSN=%s, DB=%+v", dsn, db)
 		fmt.Println("create called")
 		fmt.Println(args)
 		if len(args) < 1 {
@@ -49,9 +72,9 @@ var createCmd = &cobra.Command{
 		log.Printf("user: %s", username)
 		key, err := cryptopasta.NewSigningKey()
 		Fatal(err, "could not generate key: %s")
-		keybytes, err := x509.MarshalPKIXPublicKey(key.Public())
-		Fatal(err, "could not marshal public key: %s")
-		log.Printf("Public Key: %s", keybytes)
+		err = client.StoreKeys(key, "")
+		Fatal(err, "could not store keys: %s")
+		SubmitIdentity(username, &key.PublicKey)
 	},
 }
 
@@ -67,4 +90,5 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// createCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+
 }
