@@ -138,6 +138,45 @@ func (l *Ledger) IdentityByIdentity(db XODB) (*Identity, error) {
 	return IdentityByID(db, l.Identity)
 }
 
+// LedgersByCreatedAt retrieves a row from 'ledger' as a Ledger.
+//
+// Generated from index 'ledger_createdat_idx'.
+func LedgersByCreatedAt(db XODB, createdAt xoutil.SqTime) ([]*Ledger, error) {
+	var err error
+
+	// sql query
+	const sqlstr = `SELECT ` +
+		`id, created_at, identity, message, hash ` +
+		`FROM ledger ` +
+		`WHERE created_at = ?`
+
+	// run query
+	XOLog(sqlstr, createdAt)
+	q, err := db.Query(sqlstr, createdAt)
+	if err != nil {
+		return nil, err
+	}
+	defer q.Close()
+
+	// load results
+	res := []*Ledger{}
+	for q.Next() {
+		l := Ledger{
+			_exists: true,
+		}
+
+		// scan
+		err = q.Scan(&l.ID, &l.CreatedAt, &l.Identity, &l.Message, &l.Hash)
+		if err != nil {
+			return nil, err
+		}
+
+		res = append(res, &l)
+	}
+
+	return res, nil
+}
+
 // LedgerByID retrieves a row from 'ledger' as a Ledger.
 //
 // Generated from index 'ledger_id_pkey'.
@@ -162,4 +201,43 @@ func LedgerByID(db XODB, id int) (*Ledger, error) {
 	}
 
 	return &l, nil
+}
+
+// LedgersByIdentity retrieves a row from 'ledger' as a Ledger.
+//
+// Generated from index 'ledger_identity_idx'.
+func LedgersByIdentity(db XODB, identity int) ([]*Ledger, error) {
+	var err error
+
+	// sql query
+	const sqlstr = `SELECT ` +
+		`id, created_at, identity, message, hash ` +
+		`FROM ledger ` +
+		`WHERE identity = ?`
+
+	// run query
+	XOLog(sqlstr, identity)
+	q, err := db.Query(sqlstr, identity)
+	if err != nil {
+		return nil, err
+	}
+	defer q.Close()
+
+	// load results
+	res := []*Ledger{}
+	for q.Next() {
+		l := Ledger{
+			_exists: true,
+		}
+
+		// scan
+		err = q.Scan(&l.ID, &l.CreatedAt, &l.Identity, &l.Message, &l.Hash)
+		if err != nil {
+			return nil, err
+		}
+
+		res = append(res, &l)
+	}
+
+	return res, nil
 }

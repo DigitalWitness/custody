@@ -155,3 +155,81 @@ func IdentityByID(db XODB, id int) (*Identity, error) {
 
 	return &i, nil
 }
+
+// IdentitiesByPublicKey retrieves a row from 'identities' as a Identity.
+//
+// Generated from index 'publickey_idx'.
+func IdentitiesByPublicKey(db XODB, publicKey []byte) ([]*Identity, error) {
+	var err error
+
+	// sql query
+	const sqlstr = `SELECT ` +
+		`id, name, created_at, public_key ` +
+		`FROM identities ` +
+		`WHERE public_key = ?`
+
+	// run query
+	XOLog(sqlstr, publicKey)
+	q, err := db.Query(sqlstr, publicKey)
+	if err != nil {
+		return nil, err
+	}
+	defer q.Close()
+
+	// load results
+	res := []*Identity{}
+	for q.Next() {
+		i := Identity{
+			_exists: true,
+		}
+
+		// scan
+		err = q.Scan(&i.ID, &i.Name, &i.CreatedAt, &i.PublicKey)
+		if err != nil {
+			return nil, err
+		}
+
+		res = append(res, &i)
+	}
+
+	return res, nil
+}
+
+// IdentitiesByName retrieves a row from 'identities' as a Identity.
+//
+// Generated from index 'username_idx'.
+func IdentitiesByName(db XODB, name string) ([]*Identity, error) {
+	var err error
+
+	// sql query
+	const sqlstr = `SELECT ` +
+		`id, name, created_at, public_key ` +
+		`FROM identities ` +
+		`WHERE name = ?`
+
+	// run query
+	XOLog(sqlstr, name)
+	q, err := db.Query(sqlstr, name)
+	if err != nil {
+		return nil, err
+	}
+	defer q.Close()
+
+	// load results
+	res := []*Identity{}
+	for q.Next() {
+		i := Identity{
+			_exists: true,
+		}
+
+		// scan
+		err = q.Scan(&i.ID, &i.Name, &i.CreatedAt, &i.PublicKey)
+		if err != nil {
+			return nil, err
+		}
+
+		res = append(res, &i)
+	}
+
+	return res, nil
+}
