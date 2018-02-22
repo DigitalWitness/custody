@@ -11,6 +11,7 @@ import (
 	"crypto/x509"
 	"bytes"
 	"github.gatech.edu/NIJ-Grant/custody/crypto"
+	"log"
 )
 
 
@@ -213,3 +214,28 @@ func TestValidate(t *testing.T) {
 	}
 }
 
+
+//Can we get the identity entries associated with a username?
+func TestIndexes(t *testing.T) {
+	cdb := setupdb(t, "testing.sqlite")
+	ids, err := models.IdentitiesByName(cdb, "evan")
+	FailTest(t, err, "failed IdentitiesByName %s")
+	for _, id := range ids {
+		log.Print(*id)
+	}
+}
+
+//Can we get the ledger entries associated with an identity?
+func TestLedgerIndexes(t *testing.T){
+	cdb := setupdb(t, "testing.sqlite")
+	ids, err := models.IdentitiesByName(cdb, "evan")
+	id := ids[len(ids)-1]
+	ls, err := models.LedgersByIdentity(cdb, id.ID)
+	FailTest(t, err, "failed IdentitiesByName %s")
+	for _, l := range ls {
+		log.Print(*l)
+		if l.Identity != id.ID {
+			t.Fatal(l, id)
+		}
+	}
+}
