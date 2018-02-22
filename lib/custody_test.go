@@ -77,16 +77,6 @@ func TestDB_NewUser(t *testing.T) {
 			if !bytes.Equal(got.PublicKey, got.PublicKey) {
 				t.Fatalf("Keys not stored right")
 			}
-			ledg, err := cdb.Operate(got, "Test of operation")
-			if err != nil {
-				t.Fatal(err)
-			}
-			if ledg.Identity != got.ID {
-				t.Fatal(err)
-			}
-			if ledg.Message != "Test of operation" {
-				t.Fatal("Failed to insert message correctly")
-			}
 		})
 	}
 	CheckCount(t, cdb, "select count(*) from identities",1)
@@ -121,7 +111,26 @@ func TestSignValidate(t *testing.T) {
 	}
 }
 
+func TestLedger(t *testing.T) {
+	cdb := setupdb(t, "./testing.sqlite")
+	key, err := cryptopasta.NewSigningKey()
+	data := []byte("Test of operation")
+	hash, err := cryptopasta.Sign(data, key)
+	FailTest(t, err, "failed to generate key %s.")
+	pubbytes, err := x509.MarshalPKIXPublicKey(key.Public())
+	FailTest(t, err, "failed to encode key %s.")
+	i, err := cdb.NewUser("keyeduser", pubbytes)
+	FailTest(t, err, "failed to create user %s.")
+	ledg, err := cdb.Operate(&i, string(data), hash)
 
+	FailTest(t, err, "failed to create ledger item %s.")
+	if ledg.Identity != i.ID {
+		t.Fatal(err)
+	}
+	if ledg.Message != "Test of operation" {
+		t.Fatal("Failed to insert message correctly")
+	}
+}
 
 func TestX509(t *testing.T) {
 	var err error

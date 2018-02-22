@@ -8,7 +8,6 @@ import (
 	"github.com/xo/xoutil"
 	"github.gatech.edu/NIJ-Grant/custody/models"
 	"time"
-	"log"
 )
 
 type CustodyError struct {
@@ -102,10 +101,10 @@ func (db *DB) Operate(identity *models.Identity, message string, hash []byte) (l
 		return
 	}
 	data := []byte(message)
-	log.Printf("data  read from stdin: %v", data)
-	valid = cryptopasta.Verify([]byte(message), hash, key)
+	//log.Printf("data  read from stdin: %v", data)
+	valid = cryptopasta.Verify(data, hash, key)
 	if !valid {
-		err = CustodyError{Operation:"InvalidSignature", ID:identity, Message:[]byte(message), Signature:hash}
+		err = CustodyError{Operation:"InvalidSignature", ID:identity, Message:data, Signature:hash}
 		return
 	}
 	ledg = models.Ledger{Identity: identity.ID, Message: message}
