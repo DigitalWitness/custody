@@ -1,19 +1,18 @@
 #!/usr/bin/env bash
-#dsn="--dsn ./demo.sqlite"
-#PATH="$PATH:."
-export DSN="./demo.sqlite"
-export CUSER="james"
+export CUST_DSN="./demo.sqlite"
+export CUST_USER="james"
 
+echo "dsn=$CUST_DSN, user=$CUST_USER"
 
-custody create --dsn "$DSN" --username "$CUSER"
+./custody create
 
 function sign() {
     msg="$1"
-    echo "msg" | ./custody sign --dsn "$DSN" --username "$CUSER"
+    echo "$msg" | ./custody sign 
 }
 
 function list() {
-    ./custody list --dsn "$DSN" --username "$CUSER"
+    ./custody list --username "$CUST_USER"
 }
 
 sign "Hello World"

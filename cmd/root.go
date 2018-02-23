@@ -89,10 +89,13 @@ func initConfig() {
 		viper.SetConfigName(".custody")
 	}
 
+	viper.SetEnvPrefix("CUST")
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
+	dsn = viper.GetString("dsn")
+	username = viper.GetString("user")
 }
