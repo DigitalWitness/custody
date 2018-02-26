@@ -43,6 +43,8 @@ func Fatal(err error, fmtstring string) {
 //SubmitUser: user the API connection to create a user based on the username and the public key.
 //TODO: this currently connects to the DB directly, it should use an API layer.
 func SubmitIdentity(user string, key *ecdsa.PublicKey) (i models.Identity, err error) {
+	req := custody.Request{Operation:custody.Create, }
+	log.Print(req)
 	keybytes, err := x509.MarshalPKIXPublicKey(key)
 	if err != nil {
 		return

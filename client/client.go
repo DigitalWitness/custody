@@ -16,8 +16,8 @@ import (
 func KeyDir(path string) (fpath string, err error) {
 	if len(path) == 0 {
 		path, err = homedir.Dir()
-		path = filepath.Join(path, ".custodyctl")
 	}
+	path = filepath.Join(path, ".custodyctl")
 	fpath = path
 	return
 }
@@ -26,7 +26,10 @@ func KeyDir(path string) (fpath string, err error) {
 //returns an error if we fail to read the x509 formatted file, or
 //fail to parse the cert itself.
 func LoadPublicKey(dir string) (key *ecdsa.PublicKey, err error) {
-	path := dir
+	path, err := KeyDir(dir)
+	if err != nil {
+		return
+	}
 	pubpath := filepath.Join(path, "id_ecdsa.pub")
 	keybytes, err := ioutil.ReadFile(pubpath)
 	if err != nil {
@@ -40,7 +43,10 @@ func LoadPublicKey(dir string) (key *ecdsa.PublicKey, err error) {
 //returns an error if we fail to read the x509 formatted file, or
 //fail to parse the cert itself.
 func LoadPrivateKey(dir string) (key *ecdsa.PrivateKey, err error) {
-	path := dir
+	path, err := KeyDir(dir)
+	if err != nil {
+		return
+	}
 	pubpath := filepath.Join(path, "id_ecdsa")
 	keybytes, err := ioutil.ReadFile(pubpath)
 	if err != nil {
