@@ -21,9 +21,9 @@
 package main
 
 import (
-	"testing"
-	"os/exec"
 	"bytes"
+	"os/exec"
+	"testing"
 )
 
 func Test_main(t *testing.T) {
