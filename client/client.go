@@ -1,14 +1,18 @@
+//client: These functions implement the client side operations of the custodyctl application.
+//Things like key generation and access cannot happen on the server in order to guarantee that
+//the keys stay on the client machine.
 package client
 
 import (
 	"crypto/ecdsa"
 	"crypto/x509"
-	"github.com/mitchellh/go-homedir"
-	"github.gatech.edu/NIJ-Grant/custody/crypto"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/mitchellh/go-homedir"
+	"github.gatech.edu/NIJ-Grant/custody/crypto"
 )
 
 //KeyDir: finds the path to the directoy containing the keys relative to fpath

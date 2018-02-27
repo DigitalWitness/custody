@@ -25,14 +25,15 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/gtank/cryptopasta"
-	"github.gatech.edu/NIJ-Grant/custody/client"
-	"github.gatech.edu/NIJ-Grant/custody/lib"
-	"github.gatech.edu/NIJ-Grant/custody/models"
 	"io/ioutil"
 	"log"
 	"net/rpc"
 	"os"
+
+	"github.com/gtank/cryptopasta"
+	"github.gatech.edu/NIJ-Grant/custody/client"
+	"github.gatech.edu/NIJ-Grant/custody/lib"
+	"github.gatech.edu/NIJ-Grant/custody/models"
 )
 
 // signCmd represents the sign command
@@ -45,10 +46,7 @@ The custody create command is used to generate key pairs and upload the public p
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
 		var reply models.Ledger
-		fmt.Println("sign called")
-		db, err = custody.Dial(dsn)
-		Fatal(err, "could not connect to API: %s")
-		log.Printf("Database DSN=%s, DB=%+v", dsn, db)
+		fmt.Println("signing message from stdin")
 
 		key, err := client.LoadPrivateKey("")
 		Fatal(err, "could not load public key: %s")
@@ -56,7 +54,7 @@ The custody create command is used to generate key pairs and upload the public p
 		data, err := ioutil.ReadAll(os.Stdin)
 		Fatal(err, "could not read input: %s")
 		log.Printf("bytes read from stdin: %d", len(data))
-		log.Printf("string read from stdin: %v", data)
+		log.Printf("string read from stdin: %s", data)
 
 		hash, err := cryptopasta.Sign(data, key)
 		Fatal(err, "could not hash input: %s")
@@ -65,10 +63,10 @@ The custody create command is used to generate key pairs and upload the public p
 		client, err := rpc.DialHTTP("tcp", serverAddress+":4911")
 		Fatal(err, "dialing: %s")
 
-		req := custody.RecordRequest{username, data, hash}
+		req := custody.RecordRequest{Name: username, Data: data, Hash: hash}
 		err = client.Call("Clerk.Validate", &req, &reply)
 		Fatal(err, "could not add message to ledger %s")
-		log.Printf("Ledger Entry: %v", reply)
+		log.Printf("Ledger Entry: %+v", reply)
 	},
 }
 

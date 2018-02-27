@@ -1,19 +1,10 @@
 package custody
 
-//CreationRequest: contains the information necessary to request the creation of a new user.
-type CreationRequest struct {
+//RecordRequest: contains the information necessary to request a Clerk operation.
+// All operations use the same RecordRequest format, you only need to provide values for the necessary arguments.
+type RecordRequest struct {
 	Name      string
 	PublicKey []byte
-}
-
-//RecordRequest: contains the information necessary to request the validation of a new message.
-type RecordRequest struct {
-	Name string
-	Data []byte
-	Hash []byte
-}
-
-//ListRequest: the filter on the ledger you want to apply.
-type ListRequest struct {
-	Name string
+	Data      []byte
+	Hash      []byte
 }
