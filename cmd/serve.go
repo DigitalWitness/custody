@@ -21,7 +21,6 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/spf13/cobra"
 	"github.gatech.edu/NIJ-Grant/custody/lib"
 	"log"
@@ -29,68 +28,13 @@ import (
 	"net/rpc"
 	"net/http"
 	_ "github.com/mattn/go-sqlite3"
-	"github.gatech.edu/NIJ-Grant/custody/models"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 
-//NetConfig: a struct to hold network configuration information
-type NetConfig struct {
-	Network string
-	Address string
-
-}
-
-//NewNetConfig: create a new NetConfig with default configuration
-func NewNetConfig() NetConfig {
-	return NetConfig{"tcp", "0.0.0.0:4911"}
-}
-
-//Clerk: a struct to represent the global state of the custody application
-type Clerk struct {
-	DB custody.DB
-	NetConfig
-}
-
-//NewClerk: create a new Clerk with default configuration
-func NewClerk() *Clerk {
-	return &Clerk{NetConfig: NewNetConfig()}
-}
-
-
-//Create: ask the clerk to create a user
-func (c *Clerk) Create(req *CreationRequest, reply *models.Identity) (err error) {
-	i, err := c.DB.NewUser(req.Name, req.PublicKey)
-	if err != nil {
-		return
-	}
-	*reply = i
-	return
-}
-
-//Validate: ask the clerk to validate a message
-func (c *Clerk) Validate(req *RecordRequest, reply *models.Ledger) (err error) {
-	log.Printf("accessing identities %v", req.Name)
-	ids, err := models.IdentitiesByName(c.DB, req.Name)
-	log.Printf("accessed identities %v", ids)
-	if err != nil || len(ids) < 1 {
-		err = fmt.Errorf("no identities found with username:%s, err:%s", username, err)
-		return
-	}
-	i := ids[len(ids)-1]
-	ledg, err := c.DB.Operate(i, string(req.Data), req.Hash)
-	if err != nil {
-		return
-	}
-	*reply = ledg
-	return
-}
-
-//List: ask the clerk to list the ledger entries associated with an identity
-func (c *Clerk) List(req *ListRequest, reply *[]*models.Ledger) (err error) {
-	ls, err := models.LedgersByName(c.DB, req.Name)
-	*reply = ls
-	return
-}
 
 // serveCmd represents the serve command
 var serveCmd = &cobra.Command{
@@ -98,14 +42,14 @@ var serveCmd = &cobra.Command{
 	Short: "start the custodyctl server",
 	Long: `The server must be running in order to conduct operations on the database.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("serve called")
+		log.Println("serve called")
 		db, err := custody.Dial(dsn)
 		if err != nil {
 			log.Fatal(err)
 		}
 		cdb := custody.DB{db}
-		fmt.Println(cdb)
-		c := NewClerk()
+		log.Println(cdb)
+		c := custody.NewClerk()
 		c.DB = cdb
 		rpc.Register(c)
 		rpc.HandleHTTP()
@@ -113,7 +57,20 @@ var serveCmd = &cobra.Command{
 		if e != nil {
 			log.Fatal("listen error:", e)
 		}
-		http.Serve(l, nil)
+		go http.Serve(l, nil)
+
+
+		var gracefulStop = make(chan os.Signal)
+		signal.Notify(gracefulStop, syscall.SIGTERM)
+		signal.Notify(gracefulStop, syscall.SIGINT)
+		func() {
+			sig := <-gracefulStop
+			log.Printf("caught sig: %+v", sig)
+			log.Println("Shutting down server")
+			time.Sleep(500*time.Microsecond)
+			os.Exit(0)
+		}()
+
 	},
 }
 

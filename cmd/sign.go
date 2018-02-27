@@ -35,11 +35,6 @@ import (
 	"net/rpc"
 )
 
-type RecordRequest struct {
-	Name string
-	Data []byte
-	Hash []byte
-}
 
 // signCmd represents the sign command
 var signCmd = &cobra.Command{
@@ -71,7 +66,7 @@ The custody create command is used to generate key pairs and upload the public p
 		client, err := rpc.DialHTTP("tcp", serverAddress + ":4911")
 		Fatal(err, "dialing: %s",)
 
-		req := RecordRequest{username, data, hash}
+		req := custody.RecordRequest{username, data, hash}
 		err = client.Call("Clerk.Validate", &req, &reply)
 		Fatal(err, "could not add message to ledger %s")
 		log.Printf("Ledger Entry: %v", reply)

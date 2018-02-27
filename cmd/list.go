@@ -26,12 +26,9 @@ import (
 	"github.gatech.edu/NIJ-Grant/custody/crypto"
 	"github.gatech.edu/NIJ-Grant/custody/models"
 	"net/rpc"
+	"github.gatech.edu/NIJ-Grant/custody/lib"
 )
 
-//ListRequest: the filter on the ledger you want to apply.
-type ListRequest struct {
-	Name string
-}
 
 // listCmd represents the list command
 var listCmd = &cobra.Command{
@@ -47,7 +44,7 @@ var listCmd = &cobra.Command{
 		client, err := rpc.DialHTTP("tcp", serverAddress + ":4911")
 		Fatal(err, "dialing: %s",)
 
-		req := ListRequest{username}
+		req := custody.ListRequest{username}
 
 		err = client.Call("Clerk.List", &req, &reply)
 		Fatal(err, "Failed to find ledger items %s")

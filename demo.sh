@@ -5,10 +5,11 @@ export CUST_USER="james"
 
 echo "dsn=$CUST_DSN, user=$CUST_USER"
 
-#tear down the server after we are done
-trap "kill 0" exit
-
+# start server and track pid to send shutdown signal
 ./custody serve &
+SRVPID=$!
+
+
 ./custody create
 
 function sign() {
@@ -20,6 +21,7 @@ function list() {
     ./custody list --username "$CUST_USER"
 }
 
+# sign some messages
 sign "Hello World"
 sign "upload screenshot.png"
 sign "enhance screenshot.png"
@@ -27,7 +29,14 @@ sign "run 'facedetections' on screenshot.png"
 sign "print screenshot.png"
 sign "submit screenshot.png to court"
 
+# list the messages we just signed
 list
 
-echo "Returning server to foreground Ctrl-C to stop"
+#send shutdown signal
+echo "Shutting down server..."
+kill $SRVPID
 wait
+echo "Server stopped"
+
+echo "To clean up the database remove $CUST_DSN"
+exit 0

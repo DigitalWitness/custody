@@ -41,11 +41,6 @@ func Fatal(err error, fmtstring string) {
 	}
 }
 
-//CreationRequest: contains the information necessary to request the creation of a new user.
-type CreationRequest struct {
-	Name 		string
-	PublicKey   []byte
-}
 
 //SubmitUser: user the API connection to create a user based on the username and the public key.
 func SubmitIdentity(user string, key *ecdsa.PublicKey) (i models.Identity, err error) {
@@ -59,7 +54,7 @@ func SubmitIdentity(user string, key *ecdsa.PublicKey) (i models.Identity, err e
 	}
 
 	var reply models.Identity
-	req := &CreationRequest{user, keybytes}
+	req := &custody.CreationRequest{user, keybytes}
 	log.Printf( "Requesting Creation: %v", req)
 
 	// Synchronous call
