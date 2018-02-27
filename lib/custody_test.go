@@ -7,10 +7,11 @@ import (
 	"crypto/ecdsa"
 	"crypto/x509"
 	"database/sql"
+	"log"
+
 	"github.com/gtank/cryptopasta"
 	_ "github.com/mattn/go-sqlite3"
 	"github.gatech.edu/NIJ-Grant/custody/models"
-	"log"
 )
 
 func FailTest(t *testing.T, err error, fmtstring string) {
@@ -147,8 +148,8 @@ func TestValidate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not generate key: %v", err)
 	}
-	//t.Logf("PriKey: %+v", key)
-	//t.Logf("PubKey: %+v", key.PublicKey)
+	// t.Logf("PriKey: %+v", key)
+	// t.Logf("PubKey: %+v", key.PublicKey)
 
 	keybytes, err = x509.MarshalPKIXPublicKey(key.Public())
 	if err != nil {
@@ -177,7 +178,7 @@ func TestValidate(t *testing.T) {
 	}
 }
 
-//Can we get the identity entries associated with a username?
+// Can we get the identity entries associated with a username?
 func TestIndexes(t *testing.T) {
 	cdb := setupdb(t, "testing.sqlite")
 	ids, err := models.IdentitiesByName(cdb, "evan")
@@ -187,7 +188,7 @@ func TestIndexes(t *testing.T) {
 	}
 }
 
-//Can we get the ledger entries associated with an identity?
+// Can we get the ledger entries associated with an identity?
 func TestLedgerIndexes(t *testing.T) {
 	cdb := setupdb(t, "testing.sqlite")
 	ids, err := models.IdentitiesByName(cdb, "evan")

@@ -7,31 +7,31 @@ import (
 	"github.gatech.edu/NIJ-Grant/custody/models"
 )
 
-//NetConfig: a struct to hold network configuration information
+// NetConfig: a struct to hold network configuration information
 type NetConfig struct {
 	Network string
 	Address string
 }
 
-//NewNetConfig: create a new NetConfig with default configuration
+// NewNetConfig: create a new NetConfig with default configuration
 func NewNetConfig() NetConfig {
 	return NetConfig{"tcp", "0.0.0.0:4911"}
 }
 
-//Clerk: a struct to represent the global state of the custody application.
-//The clerk is used to register functions for RPC.
-//each method of the Clerk is accessible through the server using an RPC client.
+// Clerk: a struct to represent the global state of the custody application.
+// The clerk is used to register functions for RPC.
+// each method of the Clerk is accessible through the server using an RPC client.
 type Clerk struct {
 	DB DB
 	NetConfig
 }
 
-//NewClerk: create a new Clerk with default configuration
+// NewClerk: create a new Clerk with default configuration
 func NewClerk() *Clerk {
 	return &Clerk{NetConfig: NewNetConfig()}
 }
 
-//Create: ask the clerk to create a user
+// Create: ask the clerk to create a user
 func (c *Clerk) Create(req *RecordRequest, reply *models.Identity) (err error) {
 	if req.PublicKey == nil {
 		err = fmt.Errorf("you must provide an x509 ECDSA public key with a user creation request")
@@ -44,7 +44,7 @@ func (c *Clerk) Create(req *RecordRequest, reply *models.Identity) (err error) {
 	return
 }
 
-//Validate: ask the clerk to validate a message
+// Validate: ask the clerk to validate a message
 func (c *Clerk) Validate(req *RecordRequest, reply *models.Ledger) (err error) {
 	var ids []*models.Identity
 	var ledg models.Ledger
@@ -63,7 +63,7 @@ func (c *Clerk) Validate(req *RecordRequest, reply *models.Ledger) (err error) {
 	return
 }
 
-//List: ask the clerk to list the ledger entries associated with an identity
+// List: ask the clerk to list the ledger entries associated with an identity
 func (c *Clerk) List(req *RecordRequest, reply *[]*models.Ledger) (err error) {
 	ls, err := models.LedgersByName(c.DB, req.Name)
 	*reply = ls

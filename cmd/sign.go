@@ -58,7 +58,7 @@ The custody create command is used to generate key pairs and upload the public p
 
 		hash, err := cryptopasta.Sign(data, key)
 		Fatal(err, "could not hash input: %s")
-		//log.Printf("Successful hashing: %s", hash)
+		// log.Printf("Successful hashing: %s", hash)
 
 		client, err := rpc.DialHTTP("tcp", serverAddress+":4911")
 		Fatal(err, "dialing: %s")

@@ -34,7 +34,7 @@ var cfgFile, dsn string
 var username string
 var serverAddress string
 
-//Fatal: if err != nil, log.Fatal with a message.
+// Fatal: if err != nil, log.Fatal with a message.
 func Fatal(err error, fmtstring string) {
 	if err != nil {
 		log.Fatalf(fmtstring, err)

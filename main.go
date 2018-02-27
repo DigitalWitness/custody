@@ -22,10 +22,10 @@ package main
 
 import (
 	"github.gatech.edu/NIJ-Grant/custody/cmd"
-	//"github.gatech.edu/NIJ-Grant/custody/lib"
+	// "github.gatech.edu/NIJ-Grant/custody/lib"
 )
 
-//generate: xo
+// generate: xo
 func main() {
 	cmd.Execute()
 }

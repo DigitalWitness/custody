@@ -3,8 +3,9 @@ package crypto
 import (
 	"crypto/ecdsa"
 	"crypto/x509"
-	"github.com/gtank/cryptopasta"
 	"testing"
+
+	"github.com/gtank/cryptopasta"
 )
 
 func FailTest(t *testing.T, err error, fmtstring string) {
@@ -22,8 +23,8 @@ func TestX509(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not generate key: %v", err)
 	}
-	//t.Logf("PriKey: %+v", key)
-	//t.Logf("PubKey: %+v", key.PublicKey)
+	// t.Logf("PriKey: %+v", key)
+	// t.Logf("PubKey: %+v", key.PublicKey)
 
 	keybytes, err = x509.MarshalPKIXPublicKey(key.Public())
 
@@ -37,7 +38,7 @@ func TestX509(t *testing.T) {
 
 	sig, err := cryptopasta.Sign(message, key)
 	FailTest(t, err, "Could not sign Message: %s")
-	//t.Logf("Sig: %s", sig)
+	// t.Logf("Sig: %s", sig)
 	if pub == nil {
 		t.Fatalf("Nil Pubkey")
 	}

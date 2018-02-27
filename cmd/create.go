@@ -35,7 +35,7 @@ import (
 	"github.gatech.edu/NIJ-Grant/custody/models"
 )
 
-//SubmitUser: user the API connection to create a user based on the username and the public key.
+// SubmitIdentity: user the API connection to create a user based on the username and the public key.
 func SubmitIdentity(user string, key *ecdsa.PublicKey) (i models.Identity, err error) {
 	rpcclient, err := rpc.DialHTTP("tcp", serverAddress+":4911")
 	Fatal(err, "dialing: %s")

@@ -21,9 +21,6 @@
 package cmd
 
 import (
-	_ "github.com/mattn/go-sqlite3"
-	"github.com/spf13/cobra"
-	"github.gatech.edu/NIJ-Grant/custody/lib"
 	"log"
 	"net"
 	"net/http"
@@ -32,6 +29,10 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	_ "github.com/mattn/go-sqlite3"
+	"github.com/spf13/cobra"
+	"github.gatech.edu/NIJ-Grant/custody/lib"
 )
 
 // serveCmd represents the serve command
@@ -45,7 +46,7 @@ var serveCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		cdb := custody.DB{db}
+		cdb := custody.DB{XODB: db}
 		log.Println(cdb)
 		c := custody.NewClerk()
 		c.DB = cdb

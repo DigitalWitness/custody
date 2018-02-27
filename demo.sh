@@ -34,7 +34,7 @@ list
 
 #send shutdown signal
 echo "Shutting down server..."
-kill $SRVPID
+kill ${SRVPID}
 wait
 echo "Server stopped"
 
