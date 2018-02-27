@@ -67,6 +67,24 @@ func (c *Clerk) Create(req *CreationRequest, reply *models.Identity) (err error)
 	return
 }
 
+//Validate: ask the clerk to validate a message
+func (c *Clerk) Validate(req *RecordRequest, reply *models.Ledger) (err error) {
+	log.Printf("accessing identities %v", req.Name)
+	ids, err := models.IdentitiesByName(c.DB, req.Name)
+	log.Printf("accessed identities %v", ids)
+	if err != nil || len(ids) < 1 {
+		err = fmt.Errorf("no identities found with username:%s, err:%s", username, err)
+		return
+	}
+	i := ids[len(ids)-1]
+	ledg, err := c.DB.Operate(i, string(req.Data), req.Hash)
+	if err != nil {
+		return
+	}
+	*reply = ledg
+	return
+}
+
 
 // serveCmd represents the serve command
 var serveCmd = &cobra.Command{

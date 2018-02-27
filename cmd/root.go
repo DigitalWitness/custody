@@ -34,6 +34,7 @@ var cfgFile, dsn string
 var db *custody.DB
 var myid int
 var username string
+var serverAddress string
 
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
@@ -98,4 +99,5 @@ func initConfig() {
 	}
 	dsn = viper.GetString("dsn")
 	username = viper.GetString("user")
+	serverAddress = "localhost"
 }
