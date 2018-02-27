@@ -31,6 +31,7 @@ import (
 	"github.gatech.edu/NIJ-Grant/custody/lib"
 	"github.gatech.edu/NIJ-Grant/custody/models"
 	"log"
+	"net/rpc"
 )
 
 //Fatal: if err != nil, log.Fatal with a message.
@@ -40,16 +41,31 @@ func Fatal(err error, fmtstring string) {
 	}
 }
 
+//CreationRequest: contains the information necessary to request the creation of a new user.
+type CreationRequest struct {
+	Name 		string
+	PublicKey   []byte
+}
+
 //SubmitUser: user the API connection to create a user based on the username and the public key.
-//TODO: this currently connects to the DB directly, it should use an API layer.
 func SubmitIdentity(user string, key *ecdsa.PublicKey) (i models.Identity, err error) {
-	req := custody.Request{Operation:custody.Create, }
-	log.Print(req)
+	serverAddress := "localhost"
+	client, err := rpc.DialHTTP("tcp", serverAddress + ":4911")
+	Fatal(err, "dialing: %s",)
 	keybytes, err := x509.MarshalPKIXPublicKey(key)
 	if err != nil {
+		log.Printf( "Bailing before request: %v", err)
 		return
 	}
-	i, err = db.NewUser(user, keybytes)
+
+	var reply models.Identity
+	req := &CreationRequest{user, keybytes}
+	log.Printf( "Requesting Creation: %v", req)
+
+	// Synchronous call
+	err = client.Call("Clerk.Create", req, &reply)
+	Fatal(err, "RPC call failed: %s")
+	fmt.Printf("new user created: %d, %s, %s", reply.ID, reply.Name, reply.CreatedAt)
 	return
 }
 

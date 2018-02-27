@@ -22,12 +22,51 @@ package cmd
 
 import (
 	"fmt"
-
-	"database/sql"
 	"github.com/spf13/cobra"
 	"github.gatech.edu/NIJ-Grant/custody/lib"
 	"log"
+	"net"
+	"net/rpc"
+	"net/http"
+	_ "github.com/mattn/go-sqlite3"
+	"github.gatech.edu/NIJ-Grant/custody/models"
 )
+
+
+//NetConfig: a struct to hold network configuration information
+type NetConfig struct {
+	Network string
+	Address string
+
+}
+
+//NewNetConfig: create a new NetConfig with default configuration
+func NewNetConfig() NetConfig {
+	return NetConfig{"tcp", "0.0.0.0:4911"}
+}
+
+//Clerk: a struct to represent the global state of the custody application
+type Clerk struct {
+	DB custody.DB
+	NetConfig
+}
+
+//NewClerk: create a new Clerk with default configuration
+func NewClerk() *Clerk {
+	return &Clerk{NetConfig: NewNetConfig()}
+}
+
+
+//Create: ask the clerk to create a user
+func (c *Clerk) Create(req *CreationRequest, reply *models.Identity) (err error) {
+	i, err := c.DB.NewUser(req.Name, req.PublicKey)
+	if err != nil {
+		return
+	}
+	*reply = i
+	return
+}
+
 
 // serveCmd represents the serve command
 var serveCmd = &cobra.Command{
@@ -41,14 +80,24 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("serve called")
-		db, err := sql.Open("sqlite", "./custody.sqlite")
+		db, err := custody.Dial(dsn)
 		if err != nil {
 			log.Fatal(err)
 		}
 		cdb := custody.DB{db}
 		fmt.Println(cdb)
+		c := NewClerk()
+		c.DB = cdb
+		rpc.Register(c)
+		rpc.HandleHTTP()
+		l, e := net.Listen(c.Network, c.Address)
+		if e != nil {
+			log.Fatal("listen error:", e)
+		}
+		http.Serve(l, nil)
 	},
 }
+
 
 func init() {
 	RootCmd.AddCommand(serveCmd)
