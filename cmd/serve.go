@@ -95,13 +95,8 @@ func (c *Clerk) List(req *ListRequest, reply *[]*models.Ledger) (err error) {
 // serveCmd represents the serve command
 var serveCmd = &cobra.Command{
 	Use:   "serve",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "start the custodyctl server",
+	Long: `The server must be running in order to conduct operations on the database.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("serve called")
 		db, err := custody.Dial(dsn)
