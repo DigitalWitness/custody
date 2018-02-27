@@ -21,26 +21,24 @@
 package cmd
 
 import (
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/spf13/cobra"
 	"github.gatech.edu/NIJ-Grant/custody/lib"
 	"log"
 	"net"
-	"net/rpc"
 	"net/http"
-	_ "github.com/mattn/go-sqlite3"
+	"net/rpc"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 )
 
-
-
 // serveCmd represents the serve command
 var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "start the custodyctl server",
-	Long: `The server must be running in order to conduct operations on the database.`,
+	Long:  `The server must be running in order to conduct operations on the database.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("serve called")
 		db, err := custody.Dial(dsn)
@@ -59,7 +57,6 @@ var serveCmd = &cobra.Command{
 		}
 		go http.Serve(l, nil)
 
-
 		var gracefulStop = make(chan os.Signal)
 		signal.Notify(gracefulStop, syscall.SIGTERM)
 		signal.Notify(gracefulStop, syscall.SIGINT)
@@ -67,13 +64,12 @@ var serveCmd = &cobra.Command{
 			sig := <-gracefulStop
 			log.Printf("caught sig: %+v", sig)
 			log.Println("Shutting down server")
-			time.Sleep(500*time.Microsecond)
+			time.Sleep(500 * time.Microsecond)
 			os.Exit(0)
 		}()
 
 	},
 }
-
 
 func init() {
 	RootCmd.AddCommand(serveCmd)

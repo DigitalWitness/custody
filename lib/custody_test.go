@@ -130,7 +130,6 @@ func TestLedger(t *testing.T) {
 	}
 }
 
-
 func TestValidate(t *testing.T) {
 	var err error
 	var ident *models.Identity

@@ -45,19 +45,18 @@ func Dial(dsn string) (*DB, error) {
 type Request struct {
 	Operation       OpCode `json:"operation"`
 	models.Identity `json:"identity,omitempty"`
-	models.Ledger   `json:ledger,omitempty"`
+	models.Ledger   `json:"ledger,omitempty"`
 	ecdsa.PublicKey `json:"public_key"`
 }
 
 //go:generate stringer -type=OpCode
 type OpCode int
+
 const (
 	Create = iota
 	Sign
 	List
 )
-
-
 
 //Init: initialize the database by executing create table statements
 //theses create tables use IF NOT EXISTS so that it will be idempotent

@@ -24,11 +24,10 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.gatech.edu/NIJ-Grant/custody/crypto"
+	"github.gatech.edu/NIJ-Grant/custody/lib"
 	"github.gatech.edu/NIJ-Grant/custody/models"
 	"net/rpc"
-	"github.gatech.edu/NIJ-Grant/custody/lib"
 )
-
 
 // listCmd represents the list command
 var listCmd = &cobra.Command{
@@ -41,8 +40,8 @@ var listCmd = &cobra.Command{
 		var reply []*models.Ledger
 		var err error
 
-		client, err := rpc.DialHTTP("tcp", serverAddress + ":4911")
-		Fatal(err, "dialing: %s",)
+		client, err := rpc.DialHTTP("tcp", serverAddress+":4911")
+		Fatal(err, "dialing: %s")
 
 		req := custody.ListRequest{username}
 

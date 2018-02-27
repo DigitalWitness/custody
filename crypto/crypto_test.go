@@ -2,8 +2,8 @@ package crypto
 
 import (
 	"crypto/ecdsa"
-	"github.com/gtank/cryptopasta"
 	"crypto/x509"
+	"github.com/gtank/cryptopasta"
 	"testing"
 )
 

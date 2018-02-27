@@ -41,24 +41,23 @@ func Fatal(err error, fmtstring string) {
 	}
 }
 
-
 //SubmitUser: user the API connection to create a user based on the username and the public key.
 func SubmitIdentity(user string, key *ecdsa.PublicKey) (i models.Identity, err error) {
 	serverAddress := "localhost"
-	client, err := rpc.DialHTTP("tcp", serverAddress + ":4911")
-	Fatal(err, "dialing: %s",)
+	rpcclient, err := rpc.DialHTTP("tcp", serverAddress+":4911")
+	Fatal(err, "dialing: %s")
 	keybytes, err := x509.MarshalPKIXPublicKey(key)
 	if err != nil {
-		log.Printf( "Bailing before request: %v", err)
+		log.Printf("Bailing before request: %v", err)
 		return
 	}
 
 	var reply models.Identity
 	req := &custody.CreationRequest{user, keybytes}
-	log.Printf( "Requesting Creation: %v", req)
+	log.Printf("Requesting Creation: %v", req)
 
 	// Synchronous call
-	err = client.Call("Clerk.Create", req, &reply)
+	err = rpcclient.Call("Clerk.Create", req, &reply)
 	Fatal(err, "RPC call failed: %s")
 	fmt.Printf("new user created: %d, %s, %s", reply.ID, reply.Name, reply.CreatedAt)
 	return

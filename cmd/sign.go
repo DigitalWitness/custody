@@ -31,10 +31,9 @@ import (
 	"github.gatech.edu/NIJ-Grant/custody/models"
 	"io/ioutil"
 	"log"
-	"os"
 	"net/rpc"
+	"os"
 )
-
 
 // signCmd represents the sign command
 var signCmd = &cobra.Command{
@@ -63,8 +62,8 @@ The custody create command is used to generate key pairs and upload the public p
 		Fatal(err, "could not hash input: %s")
 		//log.Printf("Successful hashing: %s", hash)
 
-		client, err := rpc.DialHTTP("tcp", serverAddress + ":4911")
-		Fatal(err, "dialing: %s",)
+		client, err := rpc.DialHTTP("tcp", serverAddress+":4911")
+		Fatal(err, "dialing: %s")
 
 		req := custody.RecordRequest{username, data, hash}
 		err = client.Call("Clerk.Validate", &req, &reply)

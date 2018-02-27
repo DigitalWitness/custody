@@ -1,8 +1,8 @@
 package client
 
 import (
-	"testing"
 	"github.com/gtank/cryptopasta"
+	"testing"
 )
 
 func FailTest(t *testing.T, err error, fmtstring string) {
@@ -11,8 +11,7 @@ func FailTest(t *testing.T, err error, fmtstring string) {
 	}
 }
 
-
-func TestKeyDir(t *testing.T)  {
+func TestKeyDir(t *testing.T) {
 	p, err := KeyDir("./")
 	if p != ".custodyctl" {
 		t.Fatal(p, err)

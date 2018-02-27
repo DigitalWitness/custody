@@ -1,15 +1,15 @@
 package custody
 
-import ("fmt"
-	"log"
+import (
+	"fmt"
 	"github.gatech.edu/NIJ-Grant/custody/models"
+	"log"
 )
 
 //NetConfig: a struct to hold network configuration information
 type NetConfig struct {
 	Network string
 	Address string
-
 }
 
 //NewNetConfig: create a new NetConfig with default configuration
@@ -27,7 +27,6 @@ type Clerk struct {
 func NewClerk() *Clerk {
 	return &Clerk{NetConfig: NewNetConfig()}
 }
-
 
 //Create: ask the clerk to create a user
 func (c *Clerk) Create(req *CreationRequest, reply *models.Identity) (err error) {
