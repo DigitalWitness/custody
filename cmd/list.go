@@ -22,13 +22,16 @@ package cmd
 
 import (
 	"fmt"
-
 	"github.com/spf13/cobra"
-	//"github.gatech.edu/NIJ-Grant/custody/client"
 	"github.gatech.edu/NIJ-Grant/custody/crypto"
-	"github.gatech.edu/NIJ-Grant/custody/lib"
 	"github.gatech.edu/NIJ-Grant/custody/models"
+	"net/rpc"
 )
+
+//ListRequest: the filter on the ledger you want to apply.
+type ListRequest struct {
+	Name string
+}
 
 // listCmd represents the list command
 var listCmd = &cobra.Command{
@@ -38,12 +41,17 @@ var listCmd = &cobra.Command{
 	Currently only users are supported.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("list called")
+		var reply []*models.Ledger
 		var err error
 
-		db, err = custody.Dial(dsn)
-		Fatal(err, "Failed to dial database")
-		ls, err := models.LedgersByName(db, username)
+		client, err := rpc.DialHTTP("tcp", serverAddress + ":4911")
+		Fatal(err, "dialing: %s",)
+
+		req := ListRequest{username}
+
+		err = client.Call("Clerk.List", &req, &reply)
 		Fatal(err, "Failed to find ledger items %s")
+		ls := reply
 		for _, l := range ls {
 			fmt.Printf("ID:%d, CreatedAt:%s, Hash:%s, Message:%s\n",
 				l.ID, l.CreatedAt, crypto.EncodeBinary(l.Hash), l.Message)

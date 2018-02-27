@@ -85,6 +85,12 @@ func (c *Clerk) Validate(req *RecordRequest, reply *models.Ledger) (err error) {
 	return
 }
 
+//List: ask the clerk to list the ledger entries associated with an identity
+func (c *Clerk) List(req *ListRequest, reply *[]*models.Ledger) (err error) {
+	ls, err := models.LedgersByName(c.DB, req.Name)
+	*reply = ls
+	return
+}
 
 // serveCmd represents the serve command
 var serveCmd = &cobra.Command{
