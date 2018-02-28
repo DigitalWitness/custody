@@ -1,0 +1,13 @@
+workspace:
+  base: /go
+  path: src/github.gatech.edu/NIJ-Grant/custody
+
+
+pipeline:
+  build:
+    image: golang
+    commands:
+      - echo "testing NIJ-Grant/custody in directory $(pwd)"
+      - go get -v .
+      - go build -v
+      - go test ./...

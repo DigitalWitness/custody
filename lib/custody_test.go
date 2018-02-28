@@ -7,11 +7,11 @@ import (
 	"crypto/ecdsa"
 	"crypto/x509"
 	"database/sql"
+	"log"
+
 	"github.com/gtank/cryptopasta"
 	_ "github.com/mattn/go-sqlite3"
-	"github.gatech.edu/NIJ-Grant/custody/crypto"
 	"github.gatech.edu/NIJ-Grant/custody/models"
-	"log"
 )
 
 func FailTest(t *testing.T, err error, fmtstring string) {
@@ -131,40 +131,6 @@ func TestLedger(t *testing.T) {
 	}
 }
 
-func TestX509(t *testing.T) {
-	var err error
-	var keybytes []byte
-	var pub *ecdsa.PublicKey
-
-	key, err := cryptopasta.NewSigningKey()
-	if err != nil {
-		t.Fatalf("Could not generate key: %v", err)
-	}
-	//t.Logf("PriKey: %+v", key)
-	//t.Logf("PubKey: %+v", key.PublicKey)
-
-	keybytes, err = x509.MarshalPKIXPublicKey(key.Public())
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	pub, err = crypto.ParseECDSAPublicKey(keybytes)
-	FailTest(t, err, "could not restore key from bytes %v")
-	message := []byte("Can you validate me?")
-
-	sig, err := cryptopasta.Sign(message, key)
-	FailTest(t, err, "Could not sign Message: %s")
-	//t.Logf("Sig: %s", sig)
-	if pub == nil {
-		t.Fatalf("Nil Pubkey")
-	}
-	valid := cryptopasta.Verify(message, sig, pub)
-	if !valid {
-		t.Fatalf("Could not validate message with key: %s", pub)
-	}
-}
-
 func TestValidate(t *testing.T) {
 	var err error
 	var ident *models.Identity
@@ -172,7 +138,7 @@ func TestValidate(t *testing.T) {
 	var pub *ecdsa.PublicKey
 	cdb := setupdb(t, "testing.sqlite")
 
-	req := Request{Command: "create"}
+	req := Request{Operation: Create}
 	ident, err = models.IdentityByID(cdb, 1)
 	if err != nil {
 		t.Fatalf("Could not find identity: %v", err)
@@ -182,8 +148,8 @@ func TestValidate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not generate key: %v", err)
 	}
-	//t.Logf("PriKey: %+v", key)
-	//t.Logf("PubKey: %+v", key.PublicKey)
+	// t.Logf("PriKey: %+v", key)
+	// t.Logf("PubKey: %+v", key.PublicKey)
 
 	keybytes, err = x509.MarshalPKIXPublicKey(key.Public())
 	if err != nil {
@@ -212,7 +178,7 @@ func TestValidate(t *testing.T) {
 	}
 }
 
-//Can we get the identity entries associated with a username?
+// Can we get the identity entries associated with a username?
 func TestIndexes(t *testing.T) {
 	cdb := setupdb(t, "testing.sqlite")
 	ids, err := models.IdentitiesByName(cdb, "evan")
@@ -222,7 +188,7 @@ func TestIndexes(t *testing.T) {
 	}
 }
 
-//Can we get the ledger entries associated with an identity?
+// Can we get the ledger entries associated with an identity?
 func TestLedgerIndexes(t *testing.T) {
 	cdb := setupdb(t, "testing.sqlite")
 	ids, err := models.IdentitiesByName(cdb, "evan")

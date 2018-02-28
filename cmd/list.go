@@ -22,9 +22,10 @@ package cmd
 
 import (
 	"fmt"
+	"log"
+	"net/rpc"
 
 	"github.com/spf13/cobra"
-	//"github.gatech.edu/NIJ-Grant/custody/client"
 	"github.gatech.edu/NIJ-Grant/custody/crypto"
 	"github.gatech.edu/NIJ-Grant/custody/lib"
 	"github.gatech.edu/NIJ-Grant/custody/models"
@@ -37,13 +38,18 @@ var listCmd = &cobra.Command{
 	Long: `custody list is a command to list the ledger entries associate with a username or media element.
 	Currently only users are supported.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("list called")
+		var reply []*models.Ledger
 		var err error
 
-		db, err = custody.Dial(dsn)
-		Fatal(err, "Failed to dial database")
-		ls, err := models.LedgersByName(db, username)
+		log.Printf("listing records associated with user: %s", username)
+		client, err := rpc.DialHTTP("tcp", serverAddress+":4911")
+		Fatal(err, "dialing: %s")
+
+		req := custody.RecordRequest{Name: username}
+
+		err = client.Call("Clerk.List", &req, &reply)
 		Fatal(err, "Failed to find ledger items %s")
+		ls := reply
 		for _, l := range ls {
 			fmt.Printf("ID:%d, CreatedAt:%s, Hash:%s, Message:%s\n",
 				l.ID, l.CreatedAt, crypto.EncodeBinary(l.Hash), l.Message)

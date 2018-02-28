@@ -21,32 +21,54 @@
 package cmd
 
 import (
-	"fmt"
+	"log"
+	"net"
+	"net/http"
+	"net/rpc"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
-	"database/sql"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/spf13/cobra"
 	"github.gatech.edu/NIJ-Grant/custody/lib"
-	"log"
 )
 
 // serveCmd represents the serve command
 var serveCmd = &cobra.Command{
 	Use:   "serve",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "start the custodyctl server",
+	Long:  `The server must be running in order to conduct operations on the database.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("serve called")
-		db, err := sql.Open("sqlite", "./custody.sqlite")
+		log.Println("serve called")
+		db, err := custody.Dial(dsn)
 		if err != nil {
 			log.Fatal(err)
 		}
-		cdb := custody.DB{db}
-		fmt.Println(cdb)
+		cdb := custody.DB{XODB: db}
+		log.Println(cdb)
+		c := custody.NewClerk()
+		c.DB = cdb
+		rpc.Register(c)
+		rpc.HandleHTTP()
+		l, e := net.Listen(c.Network, c.Address)
+		if e != nil {
+			log.Fatal("listen error:", e)
+		}
+		go http.Serve(l, nil)
+
+		var gracefulStop = make(chan os.Signal)
+		signal.Notify(gracefulStop, syscall.SIGTERM)
+		signal.Notify(gracefulStop, syscall.SIGINT)
+		func() {
+			sig := <-gracefulStop
+			log.Printf("caught sig: %+v", sig)
+			log.Println("Shutting down server")
+			time.Sleep(500 * time.Microsecond)
+			os.Exit(0)
+		}()
+
 	},
 }
 

@@ -3,16 +3,17 @@ package models
 import (
 	"crypto/ecdsa"
 	"fmt"
+
 	"github.gatech.edu/NIJ-Grant/custody/crypto"
 )
 
-//Public: return the public key from an identity by
+// Public: return the public key from an identity by
 // parsing the x509 cert associated with the identity.
 func (i *Identity) Public() (*ecdsa.PublicKey, error) {
 	return crypto.ParseECDSAPublicKey(i.PublicKey)
 }
 
-//LedgersByName: look up all the ledger entries associated with a name
+// LedgersByName: look up all the ledger entries associated with a name
 func LedgersByName(db XODB, name string) (ls []*Ledger, err error) {
 	ids, err := IdentitiesByName(db, name)
 	if err != nil {

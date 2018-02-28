@@ -7,7 +7,7 @@ import (
 	"fmt"
 )
 
-//ParseECDSAPUblicKey calls x509.ParsePKIXPublicKey and ensures that the result is an ecdsa.PublicKey.
+// ParseECDSAPublicKey: calls x509.ParsePKIXPublicKey and ensures that the result is an ecdsa.PublicKey.
 func ParseECDSAPublicKey(data []byte) (*ecdsa.PublicKey, error) {
 	pubbox, err := x509.ParsePKIXPublicKey(data)
 	if err != nil {
@@ -22,8 +22,8 @@ func ParseECDSAPublicKey(data []byte) (*ecdsa.PublicKey, error) {
 	}
 }
 
-//EncodeBinary: base64 a buffer of bytes into a string.
-//useful for printing out hashes and public keys.
+// EncodeBinary: base64 a buffer of bytes into a string.
+// useful for printing out hashes and public keys.
 func EncodeBinary(b []byte) string {
 	return base64.StdEncoding.EncodeToString(b)
 }

@@ -25,13 +25,15 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"io/ioutil"
+	"log"
+	"net/rpc"
+	"os"
+
 	"github.com/gtank/cryptopasta"
 	"github.gatech.edu/NIJ-Grant/custody/client"
 	"github.gatech.edu/NIJ-Grant/custody/lib"
 	"github.gatech.edu/NIJ-Grant/custody/models"
-	"io/ioutil"
-	"log"
-	"os"
 )
 
 // signCmd represents the sign command
@@ -42,33 +44,29 @@ var signCmd = &cobra.Command{
 You need the private key stored in ~/.custodyctl/id_ecdsa in order to create a valid signature.
 The custody create command is used to generate key pairs and upload the public part to the server.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("sign called")
 		var err error
-		db, err = custody.Dial(dsn)
-		Fatal(err, "could not connect to API: %s")
-		log.Printf("Database DSN=%s, DB=%+v", dsn, db)
-		keydir, err := client.KeyDir("")
-		Fatal(err, "could not find key dir")
-		log.Printf("Keydir: %s", keydir)
-		key, err := client.LoadPrivateKey(keydir)
+		var reply models.Ledger
+		fmt.Println("signing message from stdin")
+
+		key, err := client.LoadPrivateKey("")
 		Fatal(err, "could not load public key: %s")
+
 		data, err := ioutil.ReadAll(os.Stdin)
 		Fatal(err, "could not read input: %s")
 		log.Printf("bytes read from stdin: %d", len(data))
-		log.Printf("string read from stdin: %v", data)
+		log.Printf("string read from stdin: %s", data)
+
 		hash, err := cryptopasta.Sign(data, key)
 		Fatal(err, "could not hash input: %s")
-		//log.Printf("Successful hashing: %s", hash)
+		// log.Printf("Successful hashing: %s", hash)
 
-		ids, err := models.IdentitiesByName(db, username)
-		if err != nil || len(ids) < 1 {
-			Fatal(fmt.Errorf("no identities found with username:%s, err:%s", username, err),
-				"identity lookup failed %s")
-		}
-		i := ids[len(ids)-1]
-		ledg, err := db.Operate(i, string(data), hash)
+		client, err := rpc.DialHTTP("tcp", serverAddress+":4911")
+		Fatal(err, "dialing: %s")
+
+		req := custody.RecordRequest{Name: username, Data: data, Hash: hash}
+		err = client.Call("Clerk.Validate", &req, &reply)
 		Fatal(err, "could not add message to ledger %s")
-		log.Printf("Ledger Entry: %v", ledg)
+		log.Printf("Ledger Entry: %+v", reply)
 	},
 }
 

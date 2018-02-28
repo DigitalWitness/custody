@@ -1,32 +1,39 @@
+// Package client: These functions implement the client side operations of the custodyctl application.
+// Things like key generation and access cannot happen on the server in order to guarantee that
+// the keys stay on the client machine.
 package client
 
 import (
 	"crypto/ecdsa"
 	"crypto/x509"
-	"github.com/mitchellh/go-homedir"
-	"github.gatech.edu/NIJ-Grant/custody/crypto"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/mitchellh/go-homedir"
+	"github.gatech.edu/NIJ-Grant/custody/crypto"
 )
 
-//KeyDir: finds the path to the directoy containing the keys relative to fpath
+// KeyDir: finds the path to the directoy containing the keys relative to fpath
 // if path is empty, we default to homedirectory/.custodyctl/
 func KeyDir(path string) (fpath string, err error) {
 	if len(path) == 0 {
 		path, err = homedir.Dir()
-		path = filepath.Join(path, ".custodyctl")
 	}
+	path = filepath.Join(path, ".custodyctl")
 	fpath = path
 	return
 }
 
-//LoadPublicKey: parse the public key from the base directory at dir,
-//returns an error if we fail to read the x509 formatted file, or
-//fail to parse the cert itself.
+// LoadPublicKey: parse the public key from the base directory at dir,
+// returns an error if we fail to read the x509 formatted file, or
+// fail to parse the cert itself.
 func LoadPublicKey(dir string) (key *ecdsa.PublicKey, err error) {
-	path := dir
+	path, err := KeyDir(dir)
+	if err != nil {
+		return
+	}
 	pubpath := filepath.Join(path, "id_ecdsa.pub")
 	keybytes, err := ioutil.ReadFile(pubpath)
 	if err != nil {
@@ -36,11 +43,14 @@ func LoadPublicKey(dir string) (key *ecdsa.PublicKey, err error) {
 	return
 }
 
-//LoadPrivateKey: parse the public key from the base directory at dir,
-//returns an error if we fail to read the x509 formatted file, or
-//fail to parse the cert itself.
+// LoadPrivateKey: parse the public key from the base directory at dir,
+// returns an error if we fail to read the x509 formatted file, or
+// fail to parse the cert itself.
 func LoadPrivateKey(dir string) (key *ecdsa.PrivateKey, err error) {
-	path := dir
+	path, err := KeyDir(dir)
+	if err != nil {
+		return
+	}
 	pubpath := filepath.Join(path, "id_ecdsa")
 	keybytes, err := ioutil.ReadFile(pubpath)
 	if err != nil {
@@ -50,11 +60,11 @@ func LoadPrivateKey(dir string) (key *ecdsa.PrivateKey, err error) {
 	return
 }
 
-//StoreKeys: write the public and private key-pair in x509 format to a directory.
-//for example StoreKeys(key, "/home/user/.custodyctl/id_ecdsa") will store
-//the keys as "/home/user/.custodyctl/id_ecdsa" and "/home/user/.custodyctl/id_ecdsa.pub"
-//This naming convention is inspired by ssh-keygen.
-//if path is empty, then store in $HOME/.custodyctl, if path is "./" then store in current directory.
+// StoreKeys: write the public and private key-pair in x509 format to a directory.
+// for example StoreKeys(key, "/home/user/.custodyctl/id_ecdsa") will store
+// the keys as "/home/user/.custodyctl/id_ecdsa" and "/home/user/.custodyctl/id_ecdsa.pub"
+// This naming convention is inspired by ssh-keygen.
+// if path is empty, then store in $HOME/.custodyctl, if path is "./" then store in current directory.
 func StoreKeys(key *ecdsa.PrivateKey, path string) (err error) {
 	path, err = KeyDir(path)
 	if err != nil {

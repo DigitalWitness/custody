@@ -25,29 +25,34 @@ import (
 
 	"crypto/ecdsa"
 	"crypto/x509"
+	"log"
+	"net/rpc"
+
 	"github.com/gtank/cryptopasta"
 	"github.com/spf13/cobra"
 	"github.gatech.edu/NIJ-Grant/custody/client"
 	"github.gatech.edu/NIJ-Grant/custody/lib"
 	"github.gatech.edu/NIJ-Grant/custody/models"
-	"log"
 )
 
-//Fatal: if err != nil, log.Fatal with a message.
-func Fatal(err error, fmtstring string) {
-	if err != nil {
-		log.Fatalf(fmtstring, err)
-	}
-}
-
-//SubmitUser: user the API connection to create a user based on the username and the public key.
-//TODO: this currently connects to the DB directly, it should use an API layer.
+// SubmitIdentity: user the API connection to create a user based on the username and the public key.
 func SubmitIdentity(user string, key *ecdsa.PublicKey) (i models.Identity, err error) {
+	rpcclient, err := rpc.DialHTTP("tcp", serverAddress+":4911")
+	Fatal(err, "dialing: %s")
 	keybytes, err := x509.MarshalPKIXPublicKey(key)
 	if err != nil {
+		log.Printf("Bailing before request: %v", err)
 		return
 	}
-	i, err = db.NewUser(user, keybytes)
+
+	var reply models.Identity
+	req := &custody.RecordRequest{Name: user, PublicKey: keybytes}
+	log.Printf("Requesting Creation: %v", req)
+
+	// Synchronous call
+	err = rpcclient.Call("Clerk.Create", req, &reply)
+	Fatal(err, "RPC call failed: %s")
+	fmt.Printf("new user created: %d, %s, %s", reply.ID, reply.Name, reply.CreatedAt)
 	return
 }
 
@@ -58,12 +63,7 @@ var createCmd = &cobra.Command{
 	Long:  `Enrolls a new user in the system by generating their x509 cert.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
-		db, err = custody.Dial(dsn)
-		Fatal(err, "could not connect to API: %s")
-		log.Printf("Database DSN=%s, DB=%+v", dsn, db)
-		fmt.Println("create called")
-
-		log.Printf("user: %s", username)
+		log.Printf("creating user: %s", username)
 		key, err := cryptopasta.NewSigningKey()
 		Fatal(err, "could not generate key: %s")
 		err = client.StoreKeys(key, "")
