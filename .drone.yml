@@ -11,3 +11,4 @@ pipeline:
       - go get -v .
       - go build -v
       - go test ./...
+      - echo "Tests Pass Ship It"
