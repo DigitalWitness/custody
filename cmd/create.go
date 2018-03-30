@@ -52,7 +52,8 @@ func SubmitIdentity(user string, key *ecdsa.PublicKey) (i models.Identity, err e
 	// Synchronous call
 	err = rpcclient.Call("Clerk.Create", req, &reply)
 	Fatal(err, "RPC call failed: %s")
-	fmt.Printf("new user created: %d, %s, %s", reply.ID, reply.Name, reply.CreatedAt)
+	fmt.Printf("new user created: %d, %s, %s\n", reply.ID, reply.Name, reply.CreatedAt)
+	i = reply
 	return
 }
 
@@ -68,7 +69,9 @@ var createCmd = &cobra.Command{
 		Fatal(err, "could not generate key: %s")
 		err = client.StoreKeys(key, "")
 		Fatal(err, "could not store keys: %s")
-		SubmitIdentity(username, &key.PublicKey)
+		id, err := SubmitIdentity(username, &key.PublicKey)
+		Fatal(err, "could not submit user: %v")
+		Output(id)
 	},
 }
 

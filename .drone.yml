@@ -10,5 +10,5 @@ pipeline:
       - echo "testing NIJ-Grant/custody in directory $(pwd)"
       - go get -v .
       - go build -v
-      - go test ./...
+      - go test -v ./...
       - echo "Tests Pass Ship It"

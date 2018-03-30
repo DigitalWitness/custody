@@ -77,6 +77,8 @@ echo "To clean up the database remove $CUST_DSN"
 exit 0
 ```
 
+You can get machine readable output with the `--json flag`.
+
 ## Running the tests
 
 The tests are developed using go tests. You can run `make test` or `go test ./...`

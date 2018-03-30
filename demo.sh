@@ -29,6 +29,7 @@ sign "run 'facedetections' on screenshot.png"
 sign "print screenshot.png"
 sign "submit screenshot.png to court"
 
+export CUST_JSON=1
 # list the messages we just signed
 list
 

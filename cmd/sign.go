@@ -67,6 +67,7 @@ The custody create command is used to generate key pairs and upload the public p
 		err = client.Call("Clerk.Validate", &req, &reply)
 		Fatal(err, "could not add message to ledger %s")
 		log.Printf("Ledger Entry: %+v", reply)
+		Output(reply)
 	},
 }
 

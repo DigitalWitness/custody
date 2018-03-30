@@ -21,6 +21,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -33,6 +34,24 @@ import (
 var cfgFile, dsn string
 var username string
 var serverAddress string
+
+// Config: the cmd configuration struct
+type Config struct {
+	cfgFile, dsn, username, serverAddress string
+	json                                  bool
+}
+
+var config Config
+
+var joutput *json.Encoder
+
+// Output: print out an arbitrary value encoding using json
+func Output(obj interface{}) {
+	joutput = json.NewEncoder(os.Stdout)
+	if config.json {
+		joutput.Encode(obj)
+	}
+}
 
 // Fatal: if err != nil, log.Fatal with a message.
 func Fatal(err error, fmtstring string) {
@@ -71,10 +90,13 @@ func init() {
 	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.custody.yaml)")
 	RootCmd.PersistentFlags().StringVar(&dsn, "dsn", "", "connection string for example file://custody.sqlite")
 	RootCmd.PersistentFlags().StringVar(&username, "username", "", "the username for your identity")
+	RootCmd.PersistentFlags().Bool("json", false, "use json formatted output")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	RootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	viper.BindPFlags(RootCmd.PersistentFlags())
+	viper.BindPFlags(RootCmd.Flags())
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -102,7 +124,15 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
+	viper.RegisterAlias("user", "username")
 	dsn = viper.GetString("dsn")
-	username = viper.GetString("user")
+	username = viper.GetString("username")
 	serverAddress = "localhost"
+	config.json = viper.GetBool("json")
+	if config.json {
+		log.Printf("using JSON output\n")
+	} else {
+		log.Printf("not using JSON output\n")
+	}
+	//log.Printf("Settings:\n%v\n", viper.AllSettings())
 }

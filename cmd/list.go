@@ -51,8 +51,13 @@ var listCmd = &cobra.Command{
 		Fatal(err, "Failed to find ledger items %s")
 		ls := reply
 		for _, l := range ls {
-			fmt.Printf("ID:%d, CreatedAt:%s, Hash:%s, Message:%s\n",
-				l.ID, l.CreatedAt, crypto.EncodeBinary(l.Hash), l.Message)
+			if config.json {
+				Output(l)
+			} else {
+				fmt.Printf("ID:%d, CreatedAt:%s, Hash:%s, Message:%s\n",
+					l.ID, l.CreatedAt, crypto.EncodeBinary(l.Hash), l.Message)
+
+			}
 		}
 	},
 }
