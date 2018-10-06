@@ -1,3 +1,4 @@
 custody
 *.sqlite
 .idea
+uploads/

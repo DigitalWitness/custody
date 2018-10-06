@@ -1,0 +1,30 @@
+{{ define "headelt" }}
+<head>
+    <link href="https://bootswatch.com/4/flatly/bootstrap.css" rel="stylesheet">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/styles/default.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+</head>
+{{ end }}
+
+{{ define "appname" }}
+Digital Witness
+{{ end }}
+{{ define "appmotto" }}
+The mobile evidence submission and analysis platform.
+{{ end }}
+
+{{ define "title" }}
+<a href="/index.html"> <h1>{{ template "appname" }}</h1></a>
+<p>{{ template "appmotto" }}</p>
+{{ end }}
+{{ template "headelt" }}
+
+<div class="container">
+{{ template "title" }}
+    <p>Welcome to the Digital Witness Backend
+    </p>
+
+    <button type="button" class="btn btn-success"onclick="location.href='/login'">Log in</button>
+
+</div>
