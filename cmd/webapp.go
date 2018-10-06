@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"log"
 	"github.gatech.edu/NIJ-Grant/custody/lib"
+	"log"
 )
 
 // serveCmd represents the serve command

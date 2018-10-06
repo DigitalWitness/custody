@@ -1,23 +1,23 @@
 package custody
 
 import (
-	"database/sql"
-	"net/http"
-	"encoding/json"
-	"log"
-	"fmt"
-	"github.gatech.edu/NIJ-Grant/nij-backend/util"
-	"html/template"
-	"net/rpc"
-	"golang.org/x/crypto/bcrypt"
-	"errors"
 	"crypto/ecdsa"
+	"crypto/x509"
+	"database/sql"
+	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/gtank/cryptopasta"
 	"github.gatech.edu/NIJ-Grant/custody/client"
-	"crypto/x509"
 	"github.gatech.edu/NIJ-Grant/custody/models"
-	"os"
+	"github.gatech.edu/NIJ-Grant/nij-backend/util"
+	"golang.org/x/crypto/bcrypt"
+	"html/template"
 	"io"
+	"log"
+	"net/http"
+	"net/rpc"
+	"os"
 )
 
 type Response struct {
@@ -51,10 +51,8 @@ func LoadTemplates(templateFiles []string) {
 }
 
 func IndexHandler() http.HandlerFunc {
-	return func (w http.ResponseWriter, r *http.Request){
-		data := map[string]interface{}{"Version": versionInfo,
-			//"CASUser": map[bool]string{true: cas.Username(r), false: ""}[cas.IsAuthenticated(r)]
-		}
+	return func(w http.ResponseWriter, r *http.Request) {
+		data := map[string]interface{}{"Version": versionInfo}//"CASUser": map[bool]string{true: cas.Username(r), false: ""}[cas.IsAuthenticated(r)]
 
 		err := templates.ExecuteTemplate(w, "index.html", data)
 		if err != nil {
@@ -101,7 +99,7 @@ func SubmitValidate(username string, file io.Reader) error {
 	return nil
 }
 
-// UploadHandler: Handlers upload requests.
+// UploadHandler: Handles upload requests.
 func UploadHandler() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		if req.Method == "POST" {
@@ -341,7 +339,6 @@ func SendResponse(res http.ResponseWriter, success bool, message string) {
 	b, _ := json.Marshal(response)
 	fmt.Fprintf(res, string(b))
 }
-
 
 // InitializeHTTPServer: Initializes server by opening connection to sqlite3 db and
 // setting up handlers.
