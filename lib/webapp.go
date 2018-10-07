@@ -5,7 +5,7 @@ import (
 	"crypto/x509"
 	"database/sql"
 	"encoding/json"
-		"fmt"
+	"fmt"
 	"github.com/gtank/cryptopasta"
 	"github.gatech.edu/NIJ-Grant/custody/client"
 	"github.gatech.edu/NIJ-Grant/custody/models"
@@ -51,7 +51,7 @@ func LoadTemplates(templateFiles []string) {
 
 func IndexHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		data := map[string]interface{}{"Version": versionInfo}//"CASUser": map[bool]string{true: cas.Username(r), false: ""}[cas.IsAuthenticated(r)]
+		data := map[string]interface{}{"Version": versionInfo} //"CASUser": map[bool]string{true: cas.Username(r), false: ""}[cas.IsAuthenticated(r)]
 
 		err := templates.ExecuteTemplate(w, "index.html", data)
 		if err != nil {
@@ -69,7 +69,7 @@ func SubmitValidate(username string, hash []byte, file io.Reader) error {
 	if err != nil {
 		return err
 	}
-	
+
 	clnt, err := rpc.DialHTTP("tcp", "localhost:4911")
 	if err != nil {
 		log.Println("Issues connecting to custody server.")
