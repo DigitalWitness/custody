@@ -5,8 +5,7 @@ import (
 	"crypto/x509"
 	"database/sql"
 	"encoding/json"
-	"errors"
-	"fmt"
+		"fmt"
 	"github.com/gtank/cryptopasta"
 	"github.gatech.edu/NIJ-Grant/custody/client"
 	"github.gatech.edu/NIJ-Grant/custody/models"
@@ -206,30 +205,6 @@ func SubmissionHandler(db *sql.DB) http.HandlerFunc {
 type User struct {
 	Email, Firstname, Lastname, Directory, UserType, Password string
 	Pubkey                                                    []byte
-}
-
-// TODO: remove and replace functionality using unique constraint on DB table.
-func fieldTaken(field, value string, db *sql.DB) (bool, error) {
-
-	stmt, err := db.Prepare("Select " + field + " from users where email == (?)")
-	if err != nil {
-		log.Println(err)
-		return true, err
-	}
-
-	rows, err := stmt.Query(value)
-	if err != nil {
-		log.Println(err)
-		return true, err
-	}
-
-	if rows.Next() {
-		err = errors.New(field + " " + value + " taken.")
-		log.Println(err)
-		return true, err
-	}
-
-	return false, nil
 }
 
 // CreateDefaultKey: generates a public/private keypair on the server.
