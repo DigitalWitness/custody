@@ -60,28 +60,16 @@ func IndexHandler() http.HandlerFunc {
 	}
 }
 
-// SubmitValidate: Validates user record request.
-// TODO: Currently using server side key. Hash needs to be generated on the clientside application.
-func SubmitValidate(username string, file io.Reader) error {
+// SubmitValidate: Validates user record request based on hash signed
+// with user private key.
+func SubmitValidate(username string, hash []byte, file io.Reader) error {
 	// Reads file into memory
 	var data []byte
 	_, err := io.ReadFull(file, data)
 	if err != nil {
 		return err
 	}
-
-	key, err := client.LoadPrivateKey(".disclose/" + username)
-	if err != nil {
-		log.Println("Error loading web daemon private key.")
-		return err
-	}
-
-	hash, err := cryptopasta.Sign(data, key)
-	if err != nil {
-		log.Println("Error generating signature.")
-		return err
-	}
-
+	
 	clnt, err := rpc.DialHTTP("tcp", "localhost:4911")
 	if err != nil {
 		log.Println("Issues connecting to custody server.")
@@ -143,10 +131,17 @@ func UploadHandler() http.HandlerFunc {
 				return
 			}
 
-			err = SubmitValidate(username, file)
+			hash := []byte(req.FormValue("hash"))
+			if len(hash) == 0 {
+				log.Println("Hash not provided")
+				SendResponse(res, false, "Hash not provided")
+				return
+			}
+
+			err = SubmitValidate(username, hash, file)
 			if err != nil {
 				log.Println(err)
-				//SendResponse(res, false, err.Error())
+				SendResponse(res, false, err.Error())
 				return
 			}
 
@@ -204,7 +199,7 @@ func SubmissionHandler(db *sql.DB) http.HandlerFunc {
 
 type User struct {
 	Email, Firstname, Lastname, Directory, UserType, Password string
-	Pubkey                                                    []byte
+	Pubkey, signature                                         []byte
 }
 
 // CreateDefaultKey: generates a public/private keypair on the server.
@@ -264,11 +259,6 @@ func SignUpHandler(db *sql.DB) http.HandlerFunc {
 			err := decoder.Decode(&user)
 			if err != nil {
 				log.Println(err)
-				SendResponse(w, false, err.Error())
-				return
-			}
-
-			if emailTaken, err := fieldTaken("email", user.Email, db); err != nil || emailTaken {
 				SendResponse(w, false, err.Error())
 				return
 			}
