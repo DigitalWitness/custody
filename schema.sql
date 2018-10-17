@@ -18,7 +18,8 @@ create table if not exists ledger (
   created_at timestamp not null,
   identity integer not null,
   message text not null,
-  hash blob not null,
+  parent blob not null, -- signature of previous message
+  signature blob not null, -- ecdsa signature of the message and parent fields
 
   foreign key (identity) references identities(id)
 );

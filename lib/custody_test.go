@@ -9,8 +9,11 @@ import (
 	"database/sql"
 	"log"
 
+	"io/ioutil"
+
 	"github.com/gtank/cryptopasta"
 	_ "github.com/mattn/go-sqlite3"
+	"github.gatech.edu/NIJ-Grant/custody/client"
 	"github.gatech.edu/NIJ-Grant/custody/models"
 )
 
@@ -82,6 +85,77 @@ func TestDB_NewUser(t *testing.T) {
 	CheckCount(t, cdb, "select count(*) from ledger", 1)
 }
 
+func TestUploadExistingKey(t *testing.T) {
+
+	//checkfounduser: helper function to test that the user we made exists
+	checkfounduser := func(t *testing.T, cdb *DB, name string) {
+		ids, err := models.IdentitiesByName(cdb, name)
+		if err != nil {
+			t.Fatalf("failed to find user from premade key %s", err.Error())
+		}
+		for i, id := range ids {
+			if id.Name != name {
+				t.Fatalf("found a bogus user %d, %v", i, id)
+			}
+		}
+	}
+	//createcheckuser: helper function to insert a user and then check that it exists
+	createcheckuser := func(t *testing.T, cdb *DB, name string, pubkey []byte) {
+		cdb.NewUser("premade_user", pubkey)
+		checkfounduser(t, cdb, name)
+	}
+
+	// make a tempdir to store the keys in.
+	tmpdir, err := ioutil.TempDir("", "custodyctl")
+	t.Logf("Tempdir for keys is %s", tmpdir)
+	cdb := setupdb(t, "testing.sqlite")
+	var pubkey []byte
+
+	// make a new key
+	key, err := cryptopasta.NewSigningKey()
+	if err != nil {
+		t.Fatalf("failed to create key %s", err.Error())
+	}
+
+	// marshall the key into bytes "by hand"
+	pubkey, err = x509.MarshalPKIXPublicKey(key.Public())
+	if err != nil {
+		t.Fatalf("failed to marshall the key %s", err.Error())
+	}
+
+	// assert that we can make a user having made the key externally
+	createcheckuser(t, cdb, "premade_user", pubkey)
+
+	// this simulates the creation of the keys by the android app
+	err = client.StoreKeys(key, tmpdir)
+	if err != nil {
+		t.Fatalf("failed to store keys to filesystem %s", err)
+	}
+
+	// key gets loaded, you could read this file by hand
+	// see the definition of client.LoadPublicKey for how to read a ECDSA key
+	// into a key object.
+	loadedkey, err := client.LoadPublicKey(tmpdir)
+	if err != nil {
+		t.Fatalf("failed to read back key from filesystem %s", err)
+	}
+	pubkey, err = x509.MarshalPKIXPublicKey(loadedkey)
+	if err != nil {
+		t.Fatalf("failed to marshall the key %s", err.Error())
+	}
+	createcheckuser(t, cdb, "premade_user_file", pubkey)
+
+	// you can also insert premade users with a Clerk / with RPC
+	ck := NewClerk()
+	ck.DB = *cdb
+	req := RecordRequest{Name: "premade_clerk", PublicKey: pubkey}
+	reply := new(models.Identity)
+	err = ck.Create(&req, reply)
+	if err != nil {
+		t.Fatalf("clerk failed to add premade user %s", err.Error())
+	}
+	checkfounduser(t, &ck.DB, "premade_clerk")
+}
 func TestSignValidate(t *testing.T) {
 	cdb := setupdb(t, "testing.sqlite")
 	key, err := cryptopasta.NewSigningKey()

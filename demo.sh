@@ -11,6 +11,7 @@ SRVPID=$!
 
 
 ./custody create
+#--username "$CUST_USER"
 
 function sign() {
     msg="$1"

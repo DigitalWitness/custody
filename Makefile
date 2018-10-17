@@ -49,7 +49,7 @@ windows:
 	cd - >/dev/null
 
 test:
-	go test ./...
+	go test -v ./...
 # if ! hash go2xunit 2>/dev/null; then go install github.com/tebeka/go2xunit; fi
 # cd ${BUILD_DIR}; \
 # godep go test -v ./... 2>&1 | go2xunit -output ${TEST_REPORT} ; \

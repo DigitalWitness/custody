@@ -1,4 +1,5 @@
 custody
 *.sqlite
 .idea
+.DS_Store
 uploads/

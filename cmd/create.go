@@ -64,6 +64,11 @@ var createCmd = &cobra.Command{
 	Long:  `Enrolls a new user in the system by generating their x509 cert.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
+		var pubkeypath string
+		if len(args) > 1 {
+			pubkeypath = args[1]
+			log.Printf("Creating from existing pubkey: %s", pubkeypath)
+		}
 		log.Printf("creating user: %s", username)
 		key, err := cryptopasta.NewSigningKey()
 		Fatal(err, "could not generate key: %s")
