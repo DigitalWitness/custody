@@ -137,6 +137,6 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## Acknowledgments
 
-* NIJ Grant Number: XXXXXXXX
+* NIJ Grant Number: NIJ2016-MU-MU-K004
 * Dekalb County Police Department
 * Blockchain
